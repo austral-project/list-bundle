@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    public:       true
+
+##### List Mapper
+  austral.list.mapper:
+    class:        Austral\ListBundle\Mapper\ListMapper
+    arguments:    ["@router", '@event_dispatcher', "@translator"]
+
+##### Event Subscriber
+  austral.list.event_subscriber:
+    class:          Austral\ListBundle\EventSubscriber\ListSubscriber
+    tags:
+      - { name: kernel.event_subscriber }

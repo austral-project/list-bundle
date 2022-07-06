@@ -1,0 +1,32 @@
+{
+  "name":                                     "austral/list-bundle",
+  "type":                                     "symfony-bundle",
+  "description":                              "List mapper for Austral",
+  "keywords":                                 ["Austral", "Mapper", "List"],
+  "license":                                  "MIT",
+  "homepage":                                 "https://austral.dev",
+  "version":                                  "3.0",
+  "authors": [
+    {
+      "name":                                 "Matthieu Beurel",
+      "email":                                "matthieu@austral.dev",
+      "role":                                 "Developer"
+    }
+  ],
+  "require": {
+    "php":                                    "^7.4 || ^8.0",
+
+    "austral/entity-bundle":                  "^3.0",
+
+    "symfony/routing":                        "^5.4"
+  },
+  "require-dev": {
+  },
+  "config": {
+    "sort-packages":                          true
+  },
+  "autoload": {
+    "psr-4": { "Austral\\ListBundle\\": "" }
+  },
+  "minimum-stability":                        "dev"
+}
