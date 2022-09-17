@@ -77,11 +77,11 @@ class DataHydrateORM extends DataHydrate
    *
    * @return $this
    */
-  public function setEntityManager(EntityManagerInterface $entityManager): DataHydrateORM
+  public function setEntityManager(EntityManagerInterface $entityManager, ?QueryBuilder $queryBuilder = null): DataHydrateORM
   {
     $this->entityManager = $entityManager;
-    $this->countAllQueryBuilder =  $this->getEntityManager()->createQueryBuilder();
-    $this->paginatorQueryBuilder =  $this->getEntityManager()->createQueryBuilder();
+    $this->countAllQueryBuilder =  $queryBuilder ?? $this->getEntityManager()->createQueryBuilder();
+    $this->paginatorQueryBuilder =  $queryBuilder ?? $this->getEntityManager()->createQueryBuilder();
     return $this;
   }
 
