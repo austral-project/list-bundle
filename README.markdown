@@ -16,7 +16,7 @@ composer require austral/list-bundle
 ```
 
 ## Documentation
-See documentation on the [official website](https://austral.dev/bundles/list-bundle)
+See documentation on the [official website](https://austral.dev/en/bundles/list-bundle)
 
 ## Commit Messages
 
