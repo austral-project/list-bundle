@@ -163,7 +163,8 @@ class Row
     {
       $columnByObject->setId("{$columnByObject->getFieldname()}-{$this->object->getId()}");
 
-      if(!$value = $column->getter($this->object))
+      $value = $column->getter($this->object);
+      if($value === "_function_disabled")
       {
         $value = $this->propertyAccessor->getValue($this->object, $column->getFieldname());
         if($column->getType() == "date" && $value)

@@ -338,7 +338,7 @@ abstract class Column implements ColumnInterface
     {
       return $this->getter->call($this, $object);
     }
-    return null;
+    return "_function_disabled";
   }
 
 }
