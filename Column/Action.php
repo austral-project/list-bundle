@@ -14,6 +14,7 @@ use Austral\ListBundle\Column\Base\ColumnWithPath;
 
 use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnActionInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Austral Column Action.
@@ -49,10 +50,30 @@ class Action extends ColumnWithPath implements ColumnActionInterface
    */
   public function __construct(string $keyname, string $entitled, string $path = null, string $picto = null, array $options = array())
   {
+    dump($options);
     parent::__construct("_action.{$keyname}", $entitled, $path, $options);
     $this->keyname = $keyname;
     $this->picto = $picto;
     $this->class .= " link";
+  }
+
+  /**
+   * @param OptionsResolver $resolver
+   */
+  protected function configureOptions(OptionsResolver $resolver)
+  {
+    $resolver->setDefaults(array(
+        "data-url"            =>  false,
+        "language"            =>  false,
+        "id"                  =>  "",
+        "class"               =>  "",
+        "attr"                =>  array(),
+        "choices"             =>  array(),
+        "translateDomain"     =>  null,
+        "translateParameters" =>  array(),
+        "keybord-shortcut"    =>  null,
+      )
+    );
   }
 
   /**
@@ -72,6 +93,10 @@ class Action extends ColumnWithPath implements ColumnActionInterface
     if($this->options["data-url"])
     {
       $this->attr['data-url'] = $this->path();
+    }
+    if($this->options["keybord-shortcut"])
+    {
+      $this->attr['data-keybord-shortcut'] = $this->getKeybordShortcut();
     }
     return $this->attr;
   }
@@ -105,6 +130,11 @@ class Action extends ColumnWithPath implements ColumnActionInterface
   {
     $this->picto = $picto;
     return $this;
+  }
+
+  public function getKeybordShortcut()
+  {
+    return $this->options['keybord-shortcut'];
   }
 
 }
