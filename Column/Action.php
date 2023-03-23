@@ -50,7 +50,6 @@ class Action extends ColumnWithPath implements ColumnActionInterface
    */
   public function __construct(string $keyname, string $entitled, string $path = null, string $picto = null, array $options = array())
   {
-    dump($options);
     parent::__construct("_action.{$keyname}", $entitled, $path, $options);
     $this->keyname = $keyname;
     $this->picto = $picto;
