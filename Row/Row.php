@@ -152,6 +152,14 @@ class Row
   }
 
   /**
+   * @return ColumnActionInterface|ColumnInterface
+   */
+  public function editAction(): ColumnActionInterface
+  {
+    return $this->editAction;
+  }
+
+  /**
    * @param ColumnInterface $column
    *
    * @return Row
