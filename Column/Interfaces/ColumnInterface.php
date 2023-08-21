@@ -137,4 +137,11 @@ interface ColumnInterface
    */
   public function setValue($value): ColumnInterface;
 
+  /**
+   * getTranslateParameters
+   *
+   * @return array
+   */
+  public function getTranslateParameters(): array;
+
 }
