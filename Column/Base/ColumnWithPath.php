@@ -50,6 +50,7 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
    */
   protected function configureOptions(OptionsResolver $resolver)
   {
+    parent::configureOptions($resolver);
     $resolver->setDefaults(array(
         "data-url"            =>  false,
         "language"            =>  false,

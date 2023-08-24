@@ -113,7 +113,8 @@ abstract class Column implements ColumnInterface
         "id"              =>  "",
         "attr"            =>  array(),
         "getter"          =>  null,
-        "translateParameters" =>  array()
+        "translateParameters" =>  array(),
+        "templatePath"    => null,
       )
     );
     $resolver->setAllowedTypes('getter', array(\Closure::class, "null"))
@@ -121,7 +122,8 @@ abstract class Column implements ColumnInterface
       ->setAllowedTypes('class', array('string', "null"))
       ->setAllowedTypes('id', array('string', "null"))
       ->setAllowedTypes('attr', array('array'))
-      ->setAllowedTypes('translateParameters', array('array'));
+      ->setAllowedTypes('translateParameters', array('array'))
+      ->setAllowedTypes('templatePath', array('string', "null"));
   }
 
   /**
@@ -351,6 +353,16 @@ abstract class Column implements ColumnInterface
   public function getTranslateParameters(): array
   {
     return $this->options["translateParameters"];
+  }
+
+  /**
+   * getTemplatePath
+   *
+   * @return string|null
+   */
+  public function getTemplatePath(): ?string
+  {
+    return $this->options["templatePath"];
   }
 
 }
