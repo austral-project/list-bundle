@@ -167,19 +167,19 @@ class Row
   public function addColumn(ColumnInterface $column): Row
   {
     $columnByObject = clone $column;
-    if($column->getType() != "template")
+    if($columnByObject->getType() != "template")
     {
       $columnByObject->setId("{$columnByObject->getFieldname()}-{$this->object->getId()}");
 
-      $value = $column->getter($this->object);
+      $value = $columnByObject->getter($this->object);
       if($value === "_function_disabled")
       {
-        $value = $this->propertyAccessor->getValue($this->object, $column->getFieldname());
-        if($column->getType() == "date" && $value)
+        $value = $this->propertyAccessor->getValue($this->object, $columnByObject->getFieldname());
+        if($columnByObject->getType() == "date" && $value)
         {
-          $value = $value->format($column->getFormat());
+          $value = $value->format($columnByObject->getFormat());
         }
-        if($column->withLanguage())
+        if($columnByObject->withLanguage())
         {
           $value = $this->section->getParent()->getTranslate()->trans($value, $this->section->getParent()->getTranslateParameters(), $this->section->getTranslateDomain());
         }
