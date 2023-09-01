@@ -50,6 +50,7 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
    */
   protected function configureOptions(OptionsResolver $resolver)
   {
+    parent::configureOptions($resolver);
     $resolver->setDefaults(array(
         "data-url"            =>  false,
         "language"            =>  false,
@@ -64,11 +65,14 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
   }
 
   /**
+   * @param array $pathAttributes
+   *
    * @return string|null
    */
-  public function path(): ?string
+  public function path(array $pathAttributes = array()): ?string
   {
-    return str_replace(array_keys($this->pathAttributes), array_values($this->pathAttributes), $this->path);
+    $pathAttributes = array_merge($this->pathAttributes, $pathAttributes);
+    return str_replace(array_keys($pathAttributes), array_values($pathAttributes), $this->path);
   }
 
   /**
