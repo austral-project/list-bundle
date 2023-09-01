@@ -165,10 +165,10 @@ abstract class DataHydrate implements DataHydrateInterface
 
   /**
    * @param string $keyname
-   *
+   * @param DataHydrateInterface|null $dataHydrate
    * @return DataHydrate
    */
-  abstract public function subDataHydrate(string $keyname): DataHydrate;
+  abstract public function subDataHydrate(string $keyname, ?DataHydrateInterface $dataHydrate = null): DataHydrate;
 
   /**
    * @param bool $force

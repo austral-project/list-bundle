@@ -147,10 +147,10 @@ interface MapperElementInterface
   public function getTypePagination(): string;
 
   /**
-   * @param string $typPagination
+   * @param string $typePagination
    *
    * @return MapperElementInterface
    */
-  public function setTypePagination(string $typPagination): MapperElementInterface;
+  public function setTypePagination(string $typePagination): MapperElementInterface;
 
 }

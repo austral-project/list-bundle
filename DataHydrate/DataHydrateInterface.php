@@ -28,10 +28,10 @@ interface DataHydrateInterface
 
   /**
    * @param string $keyname
-   *
+   * @param DataHydrateInterface|null $dataHydrate
    * @return DataHydrateInterface
    */
-  public function subDataHydrate(string $keyname): DataHydrateInterface;
+  public function subDataHydrate(string $keyname, ?DataHydrateInterface $dataHydrate = null): DataHydrateInterface;
 
   /**
    * @return EventDispatcherInterface|null

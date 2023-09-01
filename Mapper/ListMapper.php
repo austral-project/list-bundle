@@ -15,6 +15,7 @@ use Austral\ListBundle\Column\Interfaces\ColumnActionInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnWithPathInterface;
 
+use Austral\ListBundle\DataHydrate\DataHydrateInterface;
 use Austral\ListBundle\Mapper\Base\MapperElement;
 use Austral\ListBundle\Section\Section;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -190,16 +191,16 @@ class ListMapper extends MapperElement
 
   /**
    * @param string $sectionKey
-   *
+   * @param DataHydrateInterface|null $dataHydrate
    * @return Section
    */
-  public function getSection(string $sectionKey): Section
+  public function getSection(string $sectionKey, ?DataHydrateInterface $dataHydrate = null): Section
   {
     if(!$this->sectionExist($sectionKey))
     {
       $this->sections[$sectionKey] = new Section($this, $sectionKey);
       $this->sections[$sectionKey]->setTranslateDomain($this->getTranslateDomain());
-      $this->sections[$sectionKey]->setDataHydrate($this->dataHydrate->subDataHydrate($sectionKey));
+      $this->sections[$sectionKey]->setDataHydrate($this->dataHydrate->subDataHydrate($sectionKey, $dataHydrate));
     }
     return $this->sections[$sectionKey];
   }
@@ -210,7 +211,7 @@ class ListMapper extends MapperElement
   {
     if(!$this->sections)
     {
-      $this->getSection("default");
+      $this->getSection("default", $this->dataHydrate);
       $this->sections["default"]->setDataHydrate($this->dataHydrate->subDataHydrate("default", $this->dataHydrate));
     }
 

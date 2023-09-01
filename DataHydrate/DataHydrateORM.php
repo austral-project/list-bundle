@@ -164,7 +164,7 @@ class DataHydrateORM extends DataHydrate
    */
   public function executePaginator(bool $force = false): DataHydrateInterface
   {
-    if($force === true || !$this->paginatorObjects || $this->paginatorCount)
+    if($force === true || !$this->paginatorObjects || !$this->paginatorCount)
     {
       if($this->getMaxResult()) {
         $this->paginatorQueryBuilder()->setMaxResults($this->getMaxResult());
