@@ -11,6 +11,7 @@ services:
     arguments:    ["@router", '@event_dispatcher', "@translator"]
 
 ##### Event Subscriber
+  Austral\ListBundle\EventSubscriber\ListSubscriber:  "@austral.list.event_subscriber"
   austral.list.event_subscriber:
     class:          Austral\ListBundle\EventSubscriber\ListSubscriber
     tags:
