@@ -5,6 +5,7 @@ services:
     public:         true
 
 ##### List Mapper
+  Austral\ListBundle\Mapper\ListMapper: "@austral.list.mapper"
   austral.list.mapper:
     class:        Austral\ListBundle\Mapper\ListMapper
     arguments:    ["@router", '@event_dispatcher', "@translator"]
