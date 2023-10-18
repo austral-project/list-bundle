@@ -69,9 +69,9 @@ interface MapperElementInterface
   public function setTranslateDomain(string $translateDomain): MapperElementInterface;
 
   /**
-   * @return FilterMapperInterface
+   * @return FilterMapperInterface|null
    */
-  public function getFilter(): FilterMapperInterface;
+  public function getFilter(): ?FilterMapperInterface;
   /**
    * @param FilterMapperInterface $filter
    *

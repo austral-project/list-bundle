@@ -191,9 +191,9 @@ abstract class MapperElement implements MapperElementInterface
   }
 
   /**
-   * @return FilterMapperInterface
+   * @return FilterMapperInterface|null
    */
-  public function getFilter(): FilterMapperInterface
+  public function getFilter(): ?FilterMapperInterface
   {
     return $this->filter;
   }
