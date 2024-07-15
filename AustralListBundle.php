@@ -19,13 +19,4 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 class AustralListBundle extends Bundle
 {
 
-  public function boot()
-  {
-  }
-
-  public function build(ContainerBuilder $container)
-  {
-  }
-  
-  
 }
