@@ -226,7 +226,7 @@ class ListMapper extends MapperElement
       {
         $section->setFilter($this->filter);
       }
-      if(!$section->getObjects())
+      if(!$section->getObjects() && !$section->getObjectInitialise())
       {
         $section->setCountAll($section->getDataHydrate()->countAll())
           ->setObjects($section->getDataHydrate()->paginatorObjects())

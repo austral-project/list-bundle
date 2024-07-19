@@ -48,6 +48,11 @@ class Section extends MapperElement
   protected array $allRows = array();
 
   /**
+   * @var bool
+   */
+  protected bool $objectInitialise = false;
+
+  /**
    * @var array
    */
   protected array $objects = array();
@@ -193,6 +198,26 @@ class Section extends MapperElement
   }
 
   /**
+   * getObjectInitialise
+   *
+   * @return bool
+   */
+  public function getObjectInitialise(): bool
+  {
+    return $this->objectInitialise;
+  }
+
+  /**
+   * @param bool $objectInitialise
+   * @return $this
+   */
+  public function setObjectInitialise(bool $objectInitialise): Section
+  {
+    $this->objectInitialise = $objectInitialise;
+    return $this;
+  }
+
+  /**
    * @return array
    */
   public function getObjects(): array
@@ -207,6 +232,7 @@ class Section extends MapperElement
    */
   public function setObjects(array $objects): Section
   {
+    $this->setObjectInitialise(true);
     $this->objects = $objects;
     return $this;
   }
