@@ -16,6 +16,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral DataHydrate.
+ * @template T of object
+ *
+ * @implements DataHydrateInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -28,9 +32,9 @@ abstract class DataHydrate implements DataHydrateInterface
   protected ?EventDispatcherInterface $dispatcher = null;
 
   /**
-   * @var DataHydrate|null
+   * @var DataHydrateInterface<T>|null
    */
-  protected ?DataHydrate $dataHydrate = null;
+  protected ?DataHydrateInterface $dataHydrate = null;
 
   /**
    * @var string|null
@@ -38,7 +42,7 @@ abstract class DataHydrate implements DataHydrateInterface
   protected ?string $keyname = null;
 
   /**
-   * @var array
+   * @var array<string, DataHydrateInterface<T>>
    */
   protected array $subDataHydrates = array();
 
@@ -68,7 +72,7 @@ abstract class DataHydrate implements DataHydrateInterface
   protected int $paginatorCount = 0;
 
   /**
-   * @var array
+   * @var array<int|string, object>
    */
   protected array $paginatorObjects = array();
 
@@ -78,9 +82,9 @@ abstract class DataHydrate implements DataHydrateInterface
   protected bool $dispatchListEvent = false;
 
   /**
-   * @param DataHydrateInterface|null $dataHydrate
+   * @param DataHydrateInterface<T>|null $dataHydrate
    */
-  public function __construct(DataHydrateInterface $dataHydrate = null, string $keyname = null)
+  public function __construct(?DataHydrateInterface $dataHydrate = null, ?string $keyname = null)
   {
     $this->dataHydrate = $dataHydrate;
     $this->keyname = $keyname;
@@ -88,11 +92,9 @@ abstract class DataHydrate implements DataHydrateInterface
   }
 
   /**
-   * @param string|null $keyname
-   *
-   * @return DataHydrate
+   * @inheritDoc
    */
-  public function setKeyname(?string $keyname): DataHydrate
+  public function setKeyname(string $keyname): self
   {
     $this->keyname = $keyname;
     return $this;
@@ -111,29 +113,29 @@ abstract class DataHydrate implements DataHydrateInterface
    *
    * @return $this
    */
-  public function setDispatcher(EventDispatcherInterface $dispatcher): DataHydrate
+  public function setDispatcher(EventDispatcherInterface $dispatcher): self
   {
     $this->dispatcher = $dispatcher;
     return $this;
   }
 
   /**
-   * @return DataHydrate
+   * @return $this
    */
-  public function dispatchListEvent(): DataHydrate
+  public function dispatchListEvent(): self
   {
     if($this->dispatchListEvent === false)
     {
-      if($this->dataHydrate)
+      if($this->dataHydrate && $this->keyname)
       {
         $listEvent = new ListEvent($this->keyname, $this);
-        $this->dataHydrate->getDispatcher()->dispatch($listEvent, ListEvent::EVENT_AUSTRAL_LIST_FILTER);
+        $this->dataHydrate->getDispatcher()?->dispatch($listEvent, ListEvent::EVENT_AUSTRAL_LIST_FILTER);
       }
       elseif($this->dispatcher)
       {
         if($this->subDataHydrates)
         {
-          /** @var DataHydrate $subDataCollector */
+          /** @var DataHydrate<T> $subDataCollector */
           foreach($this->subDataHydrates as $keyname => $subDataCollector)
           {
             $listEvent = new ListEvent($keyname, $this);
@@ -147,28 +149,27 @@ abstract class DataHydrate implements DataHydrateInterface
   }
 
   /**
-   * @return $this
+   * @inheritDoc
    */
-  public function removeSubDataHydrate(): DataHydrate
+  public function removeSubDataHydrate(): self
   {
     $this->subDataHydrates = array();
     return $this;
   }
 
-
   /**
-   * @param FilterInterface $filter
+   * @param FilterInterface<T> $filter
    *
-   * @return DataHydrate
+   * @return $this
    */
-  abstract public function eventFilter(FilterInterface $filter): DataHydrate;
+  abstract public function eventFilter(FilterInterface $filter): self;
 
   /**
    * @param string $keyname
-   * @param DataHydrateInterface|null $dataHydrate
-   * @return DataHydrate
+   * @param DataHydrateInterface<T>|null $dataHydrate
+   * @return DataHydrateInterface<T>
    */
-  abstract public function subDataHydrate(string $keyname, ?DataHydrateInterface $dataHydrate = null): DataHydrate;
+  abstract public function subDataHydrate(string $keyname, ?DataHydrateInterface $dataHydrate = null): DataHydrateInterface;
 
   /**
    * @param bool $force
@@ -180,9 +181,9 @@ abstract class DataHydrate implements DataHydrateInterface
   /**
    * @param bool $force
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  abstract public function executePaginator(bool $force = false): DataHydrateInterface;
+  abstract public function executePaginator(bool $force = false): self;
 
   /**
    * @param bool $force
@@ -198,7 +199,7 @@ abstract class DataHydrate implements DataHydrateInterface
   /**
    * @param bool $force
    *
-   * @return array
+   * @return array<int|string, object>
    */
   public function paginatorObjects(bool $force = false): array
   {
@@ -217,9 +218,9 @@ abstract class DataHydrate implements DataHydrateInterface
   /**
    * @param int|null $maxResult
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function setMaxResult(?int $maxResult): DataHydrateInterface
+  public function setMaxResult(?int $maxResult): self
   {
     $this->maxResult = $maxResult;
     return $this;
@@ -236,9 +237,9 @@ abstract class DataHydrate implements DataHydrateInterface
   /**
    * @param int $offset
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function setOffset(int $offset): DataHydrateInterface
+  public function setOffset(int $offset): self
   {
     $this->offset = $offset;
     return $this;
@@ -255,9 +256,9 @@ abstract class DataHydrate implements DataHydrateInterface
   /**
    * @param int $numPage
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function setNumPage(int $numPage): DataHydrateInterface
+  public function setNumPage(int $numPage): self
   {
     $this->numPage = $numPage;
     return $this;

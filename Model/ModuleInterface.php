@@ -15,6 +15,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * Austral Module Interface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -23,12 +25,12 @@ interface ModuleInterface
 
   /**
    * @param string|null $actionKey
-   * @param array $parameters
+   * @param array<string, mixed> $parameters
    * @param int $referenceType
    *
-   * @return mixed|null
+   * @return mixed
    */
-  public function generateUrl(string $actionKey = null, array $parameters = array(), int $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH);
+  public function generateUrl(?string $actionKey = null, array $parameters = array(), int $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH): mixed;
 
   /**
    * @param string $actionKey

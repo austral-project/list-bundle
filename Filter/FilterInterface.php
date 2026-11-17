@@ -10,12 +10,24 @@
 
 namespace Austral\ListBundle\Filter;
 
+use Doctrine\ORM\QueryBuilder;
+
 /**
  * Austral Filter Interface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
- * @implements
+ * @interface
  */
 interface FilterInterface
 {
+
+  /**
+   * @param QueryBuilder $queryBuilder
+   * @param bool $addJoinSelect
+   *
+   * @return QueryBuilder
+   */
+  public function generateQueryBuilder(QueryBuilder $queryBuilder, bool $addJoinSelect = true): QueryBuilder;
 
 }

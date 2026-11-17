@@ -10,7 +10,8 @@
 
 namespace Austral\ListBundle\DataHydrate;
 
-use Austral\EntityBundle\EntityManager\EntityManagerInterface;
+use Austral\EntityBundle\EntityManager\EntityManagerORMInterface;
+use Austral\EntityBundle\Model\PaginatorResult;
 use Austral\ListBundle\Filter\FilterInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -18,16 +19,21 @@ use Doctrine\ORM\QueryBuilder;
 
 /**
  * Austral DataHydrate.
+ * @template T of object
+ *
+ * @extends DataHydrate<T>
+ * @implements DataHydrateInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
-class DataHydrateORM extends DataHydrate
+class DataHydrateORM extends DataHydrate implements DataHydrateInterface
 {
 
   /**
-   * @var EntityManagerInterface
+   * @var EntityManagerORMInterface<T>|null
    */
-  protected EntityManagerInterface $entityManager;
+  protected ?EntityManagerORMInterface $entityManager = null;
 
   /**
    * @var QueryBuilder|null
@@ -40,17 +46,17 @@ class DataHydrateORM extends DataHydrate
   protected ?QueryBuilder $paginatorQueryBuilder = null;
 
   /**
-   * @var \Closure|null
+   * @var \Closure(object|null): mixed|null
    */
   protected ?\Closure $queryBuilderClosure = null;
 
   /**
-   * @var \Closure|null
+   * @var \Closure(object|null): mixed|null
    */
   protected ?\Closure $countAllQueryBuilderClosure = null;
 
   /**
-   * @var \Closure|null
+   * @var \Closure(object|null): mixed|null
    */
   protected ?\Closure $selectQueryBuilderClosure = null;
 
@@ -60,47 +66,47 @@ class DataHydrateORM extends DataHydrate
   protected ?QueryBuilder $countQueryBuilder = null;
 
   /**
-   * @param DataHydrateORM|null $dataHydrate
+   * @param DataHydrateInterface<T>|null $dataHydrate
    */
-  public function __construct(DataHydrateInterface $dataHydrate = null, string $keyname = null)
+  public function __construct(?DataHydrateInterface $dataHydrate = null, ?string $keyname = null)
   {
     parent::__construct($dataHydrate, $keyname);
     if($dataHydrate)
     {
-      $this->paginatorQueryBuilder = clone $dataHydrate->paginatorQueryBuilder();
-      $this->countAllQueryBuilder = clone $dataHydrate->countAllQueryBuilder();
+      $this->paginatorQueryBuilder = $dataHydrate->paginatorQueryBuilder() ? clone $dataHydrate->paginatorQueryBuilder() : null;
+      $this->countAllQueryBuilder = $dataHydrate->countAllQueryBuilder() ? clone $dataHydrate->countAllQueryBuilder() : null;
     }
   }
 
   /**
-   * @param EntityManagerInterface $entityManager
+   * @param EntityManagerORMInterface<T> $entityManager
    * @param QueryBuilder|null $queryBuilder
    *
    * @return $this
    */
-  public function setEntityManager(EntityManagerInterface $entityManager, ?QueryBuilder $queryBuilder = null): DataHydrateORM
+  public function setEntityManager(EntityManagerORMInterface $entityManager, ?QueryBuilder $queryBuilder = null): DataHydrateORM
   {
     $this->entityManager = $entityManager;
-    $this->countAllQueryBuilder =  $queryBuilder ? clone $queryBuilder : $this->getEntityManager()->createQueryBuilder();
-    $this->paginatorQueryBuilder =  $queryBuilder ? clone $queryBuilder : $this->getEntityManager()->createQueryBuilder();
+    $this->countAllQueryBuilder =  $queryBuilder ? clone $queryBuilder : $this->getEntityManager()?->createQueryBuilder();
+    $this->paginatorQueryBuilder =  $queryBuilder ? clone $queryBuilder : $this->getEntityManager()?->createQueryBuilder();
     return $this;
   }
 
   /**
-   * @return EntityManagerInterface
+   * @return EntityManagerORMInterface<T>|null
    */
-  public function getEntityManager(): EntityManagerInterface
+  public function getEntityManager(): ?EntityManagerORMInterface
   {
     return $this->dataHydrate ? $this->dataHydrate->getEntityManager() : $this->entityManager;
   }
 
   /**
    * @param string $keyname
-   * @param DataHydrateInterface|null $dataHydrate
+   * @param DataHydrateInterface<T>|null $dataHydrate
    *
-   * @return DataHydrateORM
+   * @return DataHydrateInterface<T>
    */
-  public function subDataHydrate(string $keyname, ?DataHydrateInterface $dataHydrate = null): DataHydrate
+  public function subDataHydrate(string $keyname, ?DataHydrateInterface $dataHydrate = null): DataHydrateInterface
   {
     if(!array_key_exists($keyname, $this->subDataHydrates))
     {
@@ -112,12 +118,12 @@ class DataHydrateORM extends DataHydrate
   }
 
   /**
-   * @param QueryBuilder|null $queryBuilder
-   * @param \Closure|null $closure
+   * @param QueryBuilder $queryBuilder
+   * @param \Closure(object|null): mixed|null $closure
    *
    * @return QueryBuilder
    */
-  protected function executeQueryBuilder(QueryBuilder $queryBuilder, \Closure $closure = null): QueryBuilder
+  protected function executeQueryBuilder(QueryBuilder $queryBuilder, ?\Closure $closure = null): QueryBuilder
   {
     if($closure instanceof \Closure)
     {
@@ -127,14 +133,14 @@ class DataHydrateORM extends DataHydrate
   }
 
   /**
-   * @param FilterInterface $filter
+   * @param FilterInterface<T> $filter
    *
-   * @return DataHydrateORM
+   * @return $this
    */
-  public function eventFilter(FilterInterface $filter): DataHydrateORM
+  public function eventFilter(FilterInterface $filter): self
   {
-    $this->countAllQueryBuilder = $filter->generateQueryBuilder($this->countAllQueryBuilder(), false);
-    $this->paginatorQueryBuilder = $filter->generateQueryBuilder($this->paginatorQueryBuilder());
+    $this->countAllQueryBuilder = $this->countAllQueryBuilder() ? $filter->generateQueryBuilder($this->countAllQueryBuilder(), false) : null;
+    $this->paginatorQueryBuilder = $this->paginatorQueryBuilder() ? $filter->generateQueryBuilder($this->paginatorQueryBuilder()) : null;
     return $this;
   }
 
@@ -150,7 +156,8 @@ class DataHydrateORM extends DataHydrate
     if($force === true || !$this->countAll)
     {
       $this->dispatchListEvent();
-      $this->countAll = $this->getEntityManager()->countByQueryBuilder($this->countAllQueryBuilder());
+      $countAll = $this->countAllQueryBuilder() ? $this->getEntityManager()?->countByQueryBuilder($this->countAllQueryBuilder()) : 0;
+      $this->countAll = $countAll ?? 0;
     }
     return $this->countAll;
   }
@@ -158,20 +165,20 @@ class DataHydrateORM extends DataHydrate
   /**
    * @param bool $force
    *
-   * @return DataHydrateInterface
+   * @return $this
    * @throws NoResultException
    * @throws NonUniqueResultException
    */
-  public function executePaginator(bool $force = false): DataHydrateInterface
+  public function executePaginator(bool $force = false): self
   {
     if($force === true || !$this->paginatorObjects || !$this->paginatorCount)
     {
       if($this->getMaxResult()) {
-        $this->paginatorQueryBuilder()->setMaxResults($this->getMaxResult());
+        $this->paginatorQueryBuilder()?->setMaxResults($this->getMaxResult());
         if($this->getMaxResult() < $this->countAll())
         {
           if($this->getOffset()) {
-            $this->paginatorQueryBuilder()->setFirstResult($this->getOffset());
+            $this->paginatorQueryBuilder()?->setFirstResult($this->getOffset());
           }
           else if($this->getNumPage()) {
             $numPage = $this->getNumPage() - 1;
@@ -180,48 +187,55 @@ class DataHydrateORM extends DataHydrate
               $this->setNumPage(0);
               $numPage = 0;
             }
-            $this->paginatorQueryBuilder()->setFirstResult($this->getMaxResult() * max($numPage, 0));
+            $this->paginatorQueryBuilder()?->setFirstResult($this->getMaxResult() * max($numPage, 0));
           }
         }
       }
 
       $this->dispatchListEvent();
-      $paginatorResult = $this->getEntityManager()->paginatorByQueryBuilder($this->paginatorQueryBuilder());
-      $this->paginatorCount = $paginatorResult["count"];
-      $this->paginatorObjects = $paginatorResult["objects"];
+      if($this->getEntityManager() && $this->paginatorQueryBuilder())
+      {
+        $paginatorResult = $this->getEntityManager()->paginatorByQueryBuilder($this->paginatorQueryBuilder());
+      }
+      else
+      {
+        $paginatorResult = new PaginatorResult();
+      }
+      $this->paginatorCount = $paginatorResult->getCount();
+      $this->paginatorObjects = $paginatorResult->getObjects();
     }
     return $this;
   }
 
   /**
-   * @return QueryBuilder
+   * @return QueryBuilder|null
    */
-  public function countAllQueryBuilder(): QueryBuilder
+  public function countAllQueryBuilder(): ?QueryBuilder
   {
-    return $this->countAllQueryBuilder ?? $this->dataHydrate->countAllQueryBuilder();
+    return $this->countAllQueryBuilder ?? $this->dataHydrate?->countAllQueryBuilder();
   }
 
   /**
-   * @return QueryBuilder
+   * @return QueryBuilder|null
    */
-  public function paginatorQueryBuilder(): QueryBuilder
+  public function paginatorQueryBuilder(): ?QueryBuilder
   {
-    return $this->paginatorQueryBuilder ?? $this->dataHydrate->paginatorQueryBuilder();
+    return $this->paginatorQueryBuilder ?? $this->dataHydrate?->paginatorQueryBuilder();
   }
 
 
   /**
-   * @param \Closure|null $closure
+   * @param \Closure(object|null): mixed|null $closure
    *
    * @return $this
    */
-  public function addQueryBuilderClosure(?\Closure $closure): DataHydrateORM
+  public function addQueryBuilderClosure(?\Closure $closure): self
   {
-    $this->countAllQueryBuilder = $this->executeQueryBuilder($this->countAllQueryBuilder, $closure);
-    $this->paginatorQueryBuilder = $this->executeQueryBuilder($this->paginatorQueryBuilder, $closure);
+    $this->countAllQueryBuilder = $this->countAllQueryBuilder ? $this->executeQueryBuilder($this->countAllQueryBuilder, $closure) : null;
+    $this->paginatorQueryBuilder = $this->paginatorQueryBuilder ? $this->executeQueryBuilder($this->paginatorQueryBuilder, $closure) : null;
     if($this->subDataHydrates)
     {
-      /** @var DataHydrateORM $subDataHydrate */
+      /** @var DataHydrateORM<T> $subDataHydrate */
       foreach($this->subDataHydrates as $subDataHydrate)
       {
         $subDataHydrate->addQueryBuilderClosure($closure);
@@ -231,16 +245,16 @@ class DataHydrateORM extends DataHydrate
   }
 
   /**
-   * @param \Closure|null $closure
+   * @param \Closure(object|null): mixed|null $closure
    *
    * @return $this
    */
-  public function addQueryBuilderCountAllClosure(?\Closure $closure): DataHydrateORM
+  public function addQueryBuilderCountAllClosure(?\Closure $closure): self
   {
-    $this->countAllQueryBuilder = $this->executeQueryBuilder($this->countAllQueryBuilder, $closure);
+    $this->countAllQueryBuilder = $this->countAllQueryBuilder ? $this->executeQueryBuilder($this->countAllQueryBuilder, $closure) : null;
     if($this->subDataHydrates)
     {
-      /** @var DataHydrateORM $subDataHydrate */
+      /** @var DataHydrateORM<T> $subDataHydrate */
       foreach($this->subDataHydrates as $subDataHydrate)
       {
         $subDataHydrate->addQueryBuilderCountAllClosure($closure);
@@ -250,16 +264,16 @@ class DataHydrateORM extends DataHydrate
   }
 
   /**
-   * @param \Closure|null $closure
+   * @param \Closure(object|null): mixed|null $closure
    *
    * @return $this
    */
-  public function addQueryBuilderCountClosure(?\Closure $closure): DataHydrateORM
+  public function addQueryBuilderCountClosure(?\Closure $closure): self
   {
-    $this->countQueryBuilder = $this->executeQueryBuilder($this->countQueryBuilder, $closure);
+    $this->countQueryBuilder = $this->countQueryBuilder ? $this->executeQueryBuilder($this->countQueryBuilder, $closure) : null;
     if($this->subDataHydrates)
     {
-      /** @var DataHydrateORM $subDataHydrate */
+      /** @var DataHydrateORM<T> $subDataHydrate */
       foreach($this->subDataHydrates as $subDataHydrate)
       {
         $subDataHydrate->addQueryBuilderCountClosure($closure);
@@ -269,16 +283,16 @@ class DataHydrateORM extends DataHydrate
   }
 
   /**
-   * @param \Closure|null $closure
+   * @param \Closure(object|null): mixed|null $closure
    *
    * @return $this
    */
-  public function addQueryBuilderPaginatorClosure(?\Closure $closure): DataHydrateORM
+  public function addQueryBuilderPaginatorClosure(?\Closure $closure): self
   {
-    $this->paginatorQueryBuilder = $this->executeQueryBuilder($this->paginatorQueryBuilder, $closure);
+    $this->paginatorQueryBuilder = $this->paginatorQueryBuilder ? $this->executeQueryBuilder($this->paginatorQueryBuilder, $closure) : null;
     if($this->subDataHydrates)
     {
-      /** @var DataHydrateORM $subDataHydrate */
+      /** @var DataHydrateORM<T> $subDataHydrate */
       foreach($this->subDataHydrates as $subDataHydrate)
       {
         $subDataHydrate->addQueryBuilderPaginatorClosure($closure);

@@ -14,6 +14,10 @@ use Austral\ListBundle\Column\Base\Column;
 
 /**
  * Austral Column Template.
+ * @template T of object
+ *
+ * @extends Column<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -21,9 +25,9 @@ class Template extends Column
 {
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $type = "template";
+  protected ?string $type = "template";
 
   /**
    * @var string|null
@@ -36,9 +40,9 @@ class Template extends Column
    * @param string $fieldname
    * @param string|null $entitled
    * @param string|null $templateName
-   * @param array $options
+   * @param array<string, mixed> $options
    */
-  public function __construct(string $fieldname, ?string $entitled = null, string $templateName = null, array $options = array())
+  public function __construct(string $fieldname, ?string $entitled = null, ?string $templateName = null, array $options = array())
   {
     parent::__construct($fieldname, $entitled, $options);
     $this->templateName = $templateName;
@@ -46,9 +50,9 @@ class Template extends Column
 
   /**
    * Get templateName
-   * @return string
+   * @return string|null
    */
-  public function getTemplateName(): string
+  public function getTemplateName(): ?string
   {
     return $this->templateName;
   }
@@ -56,9 +60,9 @@ class Template extends Column
   /**
    * @param string $templateName
    *
-   * @return Template
+   * @return $this
    */
-  public function setTemplateName(string $templateName): Template
+  public function setTemplateName(string $templateName): self
   {
     $this->templateName = $templateName;
     return $this;

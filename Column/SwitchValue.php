@@ -11,10 +11,15 @@
 namespace Austral\ListBundle\Column;
 
 use Austral\ListBundle\Column\Base\ColumnWithPath;
+use Austral\ListBundle\Column\Interfaces\ColumnActionInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Austral Column Switch.
+ * @template T of object
+ *
+ * @extends ColumnWithPath<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -22,9 +27,9 @@ class SwitchValue extends ColumnWithPath
 {
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $type = "switch";
+  protected ?string $type = "switch";
 
   /**
    * @var bool
@@ -32,19 +37,19 @@ class SwitchValue extends ColumnWithPath
   protected bool $isGranted = true;
 
   /**
-   * @var array
+   * @var array<string, mixed>
    */
-  protected $switchOptions = array();
+  protected array $switchOptions = array();
 
   /**
    * @var mixed
    */
-  protected $heads;
+  protected mixed $heads;
 
   /**
    * @var mixed
    */
-  protected $tails;
+  protected mixed $tails;
 
   /**
    * Choices constructor.
@@ -55,9 +60,9 @@ class SwitchValue extends ColumnWithPath
    * @param mixed $tails
    * @param string|null $path
    * @param bool $isGranted
-   * @param array $options
+   * @param array<string, mixed> $options
    */
-  public function __construct(string $fieldname, ?string $entitled = null, $heads = 0, $tails = 1, string $path = null, bool $isGranted = true, array $options = array())
+  public function __construct(string $fieldname, ?string $entitled = null, $heads = 0, $tails = 1, ?string $path = null, bool $isGranted = true, array $options = array())
   {
     parent::__construct($fieldname, $entitled, $path, $options);
     $this->isGranted = $isGranted;
@@ -69,7 +74,7 @@ class SwitchValue extends ColumnWithPath
   /**
    * @param OptionsResolver $resolver
    */
-  protected function configureOptions(OptionsResolver $resolver)
+  protected function configureOptions(OptionsResolver $resolver): void
   {
     parent::configureOptions($resolver);
     $resolver->setDefault("viewEntitled", false);
@@ -122,7 +127,7 @@ class SwitchValue extends ColumnWithPath
   /**
    * @return mixed
    */
-  public function heads()
+  public function heads(): mixed
   {
     return $this->heads;
   }
@@ -130,21 +135,22 @@ class SwitchValue extends ColumnWithPath
   /**
    * @return mixed
    */
-  public function tails()
+  public function tails(): mixed
   {
     return $this->tails;
   }
 
   /**
-   * @return array
+   * @return array<string, Action<T>>
    */
   public function actions(): array
   {
-    $actions = array();
     $this->pathAttributes['__fieldname__'] = $this->fieldname;
-
     $this->pathAttributes['__value__'] = $this->heads;
-    $actions["heads"] = new Action("change.heads", "", $this->path(), null, array(
+    $this->pathAttributes['__value__'] = $this->tails;
+
+    /** @var Action<T> $headsAction */
+    $headsAction = new Action("change.heads", "", $this->path(), null, array(
         "translateDomain" => $this->translateDomain(),
         "data-url"                    =>  true,
         "class"                       =>  "heads-value",
@@ -155,8 +161,8 @@ class SwitchValue extends ColumnWithPath
       )
     );
 
-    $this->pathAttributes['__value__'] = $this->tails;
-    $actions["tails"] = new Action("change.tails", "", $this->path(), null, array(
+    /** @var Action<T> $tailsAction */
+    $tailsAction = new Action("change.tails", "", $this->path(), null, array(
         "translateDomain" => $this->translateDomain(),
         "data-url"                    =>  true,
         "class"                       =>  "tails-value",
@@ -166,11 +172,14 @@ class SwitchValue extends ColumnWithPath
         )
       )
     );
-    return $actions;
+    return array(
+      "heads" => $headsAction,
+      "tails" => $tailsAction,
+    );
   }
 
   /**
-   * @return array
+   * @return array<int, string>
    */
   public function getStyles(): array
   {
@@ -193,20 +202,13 @@ class SwitchValue extends ColumnWithPath
   }
 
   /**
-   * @return array
+   * @return array<string, string|null>
    */
   public function switchData(): array
   {
-    $data =  array();
-    /**
-     * @var string $key
-     * @var Action $action
-     */
-    foreach($this->actions() as $key => $action)
-    {
-      $data[$key] = $action->path();
-    }
-    return $data;
+    return array_map(function ($action) {
+      return $action->path();
+    }, $this->actions());
   }
 
 }

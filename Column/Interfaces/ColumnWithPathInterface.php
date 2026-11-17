@@ -10,10 +10,10 @@
 
 namespace Austral\ListBundle\Column\Interfaces;
 
-use Austral\ListBundle\Column\Base\ColumnWithPath;
-
 /**
  * Austral Column With Path Interface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
 interface ColumnWithPathInterface
@@ -24,7 +24,7 @@ interface ColumnWithPathInterface
    *
    * @return $this
    */
-  public function setPath(?string $path): ColumnWithPathInterface;
+  public function setPath(?string $path): self;
 
   /**
    * @return string|null
@@ -32,14 +32,14 @@ interface ColumnWithPathInterface
   public function path(): ?string;
 
   /**
-   * @param array $pathAttributes
+   * @param array<string, mixed> $pathAttributes
    *
-   * @return ColumnWithPathInterface
+   * @return $this
    */
-  public function setPathAttributes(array $pathAttributes): ColumnWithPathInterface;
+  public function setPathAttributes(array $pathAttributes): self;
 
   /**
-   * @return array
+   * @return array<string, mixed>
    */
   public function getPathAttributes(): array;
 
@@ -51,8 +51,8 @@ interface ColumnWithPathInterface
   /**
    * @param string $translateDomain
    *
-   * @return ColumnWithPath
+   * @return $this
    */
-  public function setTranslateDomain(string $translateDomain): ColumnWithPath;
+  public function setTranslateDomain(string $translateDomain): self;
 
 }

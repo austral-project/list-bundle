@@ -12,12 +12,17 @@ namespace Austral\ListBundle\Column;
 
 use Austral\ListBundle\Column\Base\ColumnWithPath;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnActionInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Austral Column Action.
+ * @template T of object
+ *
+ * @extends ColumnWithPath<T>
+ * @implements ColumnActionInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -27,7 +32,7 @@ class Action extends ColumnWithPath implements ColumnActionInterface
   /**
    * @var string|null
    */
-  protected ?string $picto;
+  protected ?string $picto = null;
 
   /**
    * @var string
@@ -35,7 +40,7 @@ class Action extends ColumnWithPath implements ColumnActionInterface
   protected string $keyname;
 
   /**
-   * @var EntityInterface|null
+   * @var EntityInterface<T>|null
    */
   protected ?EntityInterface $object = null;
 
@@ -43,12 +48,12 @@ class Action extends ColumnWithPath implements ColumnActionInterface
    * Choices constructor.
    *
    * @param string $keyname
-   * @param string $entitled
+   * @param string|null $entitled
    * @param string|null $path
    * @param string|null $picto
-   * @param array $options
+   * @param array<string, mixed> $options
    */
-  public function __construct(string $keyname, string $entitled, string $path = null, string $picto = null, array $options = array())
+  public function __construct(string $keyname, ?string $entitled, ?string $path = null, ?string $picto = null, array $options = array())
   {
     parent::__construct("_action.{$keyname}", $entitled, $path, $options);
     $this->keyname = $keyname;
@@ -59,7 +64,7 @@ class Action extends ColumnWithPath implements ColumnActionInterface
   /**
    * @param OptionsResolver $resolver
    */
-  protected function configureOptions(OptionsResolver $resolver)
+  protected function configureOptions(OptionsResolver $resolver): void
   {
     $resolver->setDefaults(array(
         "data-url"            =>  false,
@@ -70,7 +75,7 @@ class Action extends ColumnWithPath implements ColumnActionInterface
         "choices"             =>  array(),
         "translateDomain"     =>  null,
         "translateParameters" =>  array(),
-        "keybord-shortcut"    =>  null,
+        "keyboard-shortcut"    =>  null,
       )
     );
   }
@@ -85,7 +90,7 @@ class Action extends ColumnWithPath implements ColumnActionInterface
   }
 
   /**
-   * @return array
+   * @return array<string, mixed>
    */
   public function attr(): array
   {
@@ -93,9 +98,9 @@ class Action extends ColumnWithPath implements ColumnActionInterface
     {
       $this->attr['data-url'] = $this->path();
     }
-    if($this->options["keybord-shortcut"])
+    if($this->options["keyboard-shortcut"])
     {
-      $this->attr['data-keybord-shortcut'] = $this->getKeybordShortcut();
+      $this->attr['data-keyboard-shortcut'] = $this->getKeyboardShortcut();
     }
     return $this->attr;
   }
@@ -103,9 +108,9 @@ class Action extends ColumnWithPath implements ColumnActionInterface
   /**
    * @param string $keyname
    *
-   * @return Action
+   * @return $this
    */
-  public function setKeyname(string $keyname): Action
+  public function setKeyname(string $keyname): self
   {
     $this->keyname = $keyname;
     return $this;
@@ -123,17 +128,22 @@ class Action extends ColumnWithPath implements ColumnActionInterface
   /**
    * @param string|null $picto
    *
-   * @return Action
+   * @return $this
    */
-  public function setPicto(?string $picto): Action
+  public function setPicto(?string $picto): self
   {
     $this->picto = $picto;
     return $this;
   }
 
-  public function getKeybordShortcut()
+  /**
+   * getKeyboardShortcut
+   *
+   * @return mixed
+   */
+  public function getKeyboardShortcut(): mixed
   {
-    return $this->options['keybord-shortcut'];
+    return $this->options['keyboard-shortcut'];
   }
 
 }

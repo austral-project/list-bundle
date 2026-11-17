@@ -14,6 +14,10 @@ use Austral\ListBundle\Column\Base\Column;
 
 /**
  * Austral Column Value.
+ * @template T of object
+ *
+ * @extends Column<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -21,8 +25,8 @@ class Value extends Column
 {
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $type = "value";
+  protected ?string $type = "value";
 
 }

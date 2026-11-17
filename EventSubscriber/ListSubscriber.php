@@ -17,13 +17,15 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Austral ListSubscriber.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
 class ListSubscriber implements EventSubscriberInterface
 {
   /**
-   * @return array
+   * @return array<string, string|array{0: string, 1: int}|list<array{0: string, 1?: int}>>
    */
   public static function getSubscribedEvents(): array
   {
@@ -33,9 +35,9 @@ class ListSubscriber implements EventSubscriberInterface
   }
 
   /**
-   * @param ListEvent $listEvent
+   * @param ListEvent<T> $listEvent
    */
-  public function filter(ListEvent $listEvent)
+  public function filter(ListEvent $listEvent): void
   {
 
   }

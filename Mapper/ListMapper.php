@@ -18,12 +18,18 @@ use Austral\ListBundle\Column\Interfaces\ColumnWithPathInterface;
 use Austral\ListBundle\DataHydrate\DataHydrateInterface;
 use Austral\ListBundle\Mapper\Base\MapperElement;
 use Austral\ListBundle\Section\Section;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\IdentityTranslator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Mapper.
+ * ListMapper.
+ * @template T of object
+ *
+ * @extends MapperElement<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
 class ListMapper extends MapperElement
@@ -52,24 +58,9 @@ class ListMapper extends MapperElement
   #const PAGINATION_SCROLL = "scroll";
 
   /**
-   * @var RouterInterface
+   * @var EntityManagerInterface<T>|null
    */
-  protected RouterInterface $router;
-
-  /**
-   * @var object|IdentityTranslator|null
-   */
-  protected $translate = null;
-
-  /**
-   * @var EventDispatcherInterface
-   */
-  protected EventDispatcherInterface $dispatcher;
-
-  /**
-   * @var EntityManagerInterface
-   */
-  protected EntityManagerInterface $entityManager;
+  protected ?EntityManagerInterface $entityManager = null;
 
   /**
    * @var string|null
@@ -82,22 +73,22 @@ class ListMapper extends MapperElement
   protected ?string $subTitle = null;
 
   /**
-   * @var array
+   * @var array<string, Section<T>>
    */
   protected array $sections = array();
 
   /**
-   * @var array
+   * @var array<string, ColumnActionInterface<T>>
    */
   protected array $actions = array();
 
   /**
-   * @var array
+   * @var array<string, string>
    */
   protected array $translateParameters = array();
 
   /**
-   * @var array
+   * @var array<int, ColumnActionInterface<T>>
    */
   protected array $columnsAction = array();
 
@@ -109,11 +100,11 @@ class ListMapper extends MapperElement
   /**
    * Mapper constructor.
    */
-  public function __construct(RouterInterface $router, EventDispatcherInterface $dispatcher, $translate)
+  public function __construct(
+    #[Autowire(service: 'router')] protected RouterInterface $router,
+    #[Autowire(service: 'event_dispatcher')] protected EventDispatcherInterface $dispatcher,
+    #[Autowire(service: 'translator')] protected TranslatorInterface $translate)
   {
-    $this->router = $router;
-    $this->dispatcher = $dispatcher;
-    $this->translate = $translate;
   }
 
   /**
@@ -133,19 +124,19 @@ class ListMapper extends MapperElement
   }
 
   /**
-   * @return object|IdentityTranslator|null
+   * @return TranslatorInterface
    */
-  public function getTranslate()
+  public function getTranslate(): TranslatorInterface
   {
     return $this->translate;
   }
 
   /**
-   * @param $translateParameters
+   * @param array<string, string> $translateParameters
    *
    * @return $this
    */
-  public function setTranslateParameters($translateParameters): ListMapper
+  public function setTranslateParameters(array $translateParameters): self
   {
     $this->translateParameters = $translateParameters;
     return $this;
@@ -157,14 +148,14 @@ class ListMapper extends MapperElement
    *
    * @return $this
    */
-  public function addTranslateParameters(string $key, string $value): ListMapper
+  public function addTranslateParameters(string $key, string $value): self
   {
     $this->translateParameters[$key] = $value;
     return $this;
   }
 
   /**
-   * @return array
+   * @return array<string, string>
    */
   public function getTranslateParameters(): array
   {
@@ -172,7 +163,7 @@ class ListMapper extends MapperElement
   }
 
   /**
-   * @return array
+   * @return array<string, Section<T>>
    */
   public function getSections(): array
   {
@@ -191,31 +182,39 @@ class ListMapper extends MapperElement
 
   /**
    * @param string $sectionKey
-   * @param DataHydrateInterface|null $dataHydrate
-   * @return Section
+   * @param DataHydrateInterface<T>|null $dataHydrate
+   * @return Section<T>
    */
   public function getSection(string $sectionKey, ?DataHydrateInterface $dataHydrate = null): Section
   {
     if(!$this->sectionExist($sectionKey))
     {
-      $this->sections[$sectionKey] = new Section($this, $sectionKey);
+      /** @var Section<T> $section */
+      $section = new Section($this, $sectionKey);
+      $this->sections[$sectionKey] = $section;
       $this->sections[$sectionKey]->setTranslateDomain($this->getTranslateDomain());
-      $this->sections[$sectionKey]->setDataHydrate($this->dataHydrate->subDataHydrate($sectionKey, $dataHydrate));
+      if($this->dataHydrate)
+      {
+        $this->sections[$sectionKey]->setDataHydrate($this->dataHydrate->subDataHydrate($sectionKey, $dataHydrate));
+      }
     }
     return $this->sections[$sectionKey];
   }
 
   /**
+   * generate
+   *
+   * @return void
    */
-  public function generate()
+  public function generate(): void
   {
-    if(!$this->sections)
+    if(!$this->sections && $this->dataHydrate)
     {
-      $this->getSection("default", $this->dataHydrate);
-      $this->sections["default"]->setDataHydrate($this->dataHydrate->subDataHydrate("default", $this->dataHydrate));
+      $section = $this->getSection("default", $this->dataHydrate);
+      $section->setDataHydrate($this->dataHydrate->subDataHydrate("default", $this->dataHydrate));
     }
 
-    /** @var Section $section */
+    /** @var Section<T> $section */
     foreach($this->sections as $section)
     {
       if($this->headerColumns)
@@ -228,10 +227,13 @@ class ListMapper extends MapperElement
       }
       if(!$section->getObjects() && !$section->getObjectInitialise())
       {
-        $section->setCountAll($section->getDataHydrate()->countAll())
-          ->setObjects($section->getDataHydrate()->paginatorObjects())
-          ->setCountPaginator($section->getDataHydrate()->paginatorCount());
-
+        $dataHydrate = $section->getDataHydrate();
+        if($dataHydrate)
+        {
+          $section->setCountAll($dataHydrate->countAll())
+            ->setObjects($dataHydrate->paginatorObjects())
+            ->setCountPaginator($dataHydrate->paginatorCount());
+        }
       }
       $section->generateRows();
       if(!$section->columnActionsDefined())
@@ -245,22 +247,36 @@ class ListMapper extends MapperElement
   }
 
   /**
-   * @param ColumnActionInterface $action
+   * @param ColumnActionInterface<T> $action
    *
-   * @return ListMapper
+   * @return $this
    */
-  public function addColumnAction(ColumnActionInterface $action): ListMapper
+  public function addColumnAction(ColumnActionInterface $action): self
   {
     $this->columnsAction[] = $action;
     return $this;
   }
 
   /**
-   * @param ColumnActionInterface|ColumnWithPathInterface|ColumnInterface $action
+   * @param list<ColumnActionInterface<T>> $actions
    *
    * @return $this
    */
-  public function addAction(ColumnActionInterface $action, ?int $position = null): ListMapper
+  public function addColumnActions(array $actions): self
+  {
+    foreach ($actions as $action)
+    {
+      $this->addColumnAction($action);
+    }
+    return $this;
+  }
+
+  /**
+   * @param ColumnActionInterface<T> $action
+   *
+   * @return $this
+   */
+  public function addAction(ColumnActionInterface $action, ?int $position = null): self
   {
     if(!$action->translateDomain())
     {
@@ -273,7 +289,7 @@ class ListMapper extends MapperElement
   }
 
   /**
-   * @return array
+   * @return array<string, ColumnActionInterface<T>>
    */
   public function actions(): array
   {

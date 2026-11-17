@@ -14,6 +14,10 @@ use Austral\ListBundle\Column\Base\Column;
 
 /**
  * Austral Column Date.
+ * @template T of object
+ *
+ * @extends Column<object>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -21,9 +25,9 @@ class Date extends Column
 {
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $type = "date";
+  protected ?string $type = "date";
 
   /**
    * @var string
@@ -36,7 +40,7 @@ class Date extends Column
    * @param string $fieldname
    * @param string|null $entitled
    * @param string $format
-   * @param array $options
+   * @param array<string, mixed> $options
    */
   public function __construct(string $fieldname, ?string $entitled = null, string $format = "Y-m-d", array $options = array())
   {

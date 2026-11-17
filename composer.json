@@ -1,31 +1,40 @@
 {
-  "name":                                     "austral/list-bundle",
-  "type":                                     "symfony-bundle",
-  "description":                              "List mapper for Austral",
-  "keywords":                                 ["Austral", "Mapper", "List"],
-  "license":                                  "MIT",
-  "homepage":                                 "https://austral.dev",
-  "authors": [
-    {
-      "name":                                 "Matthieu Beurel",
-      "email":                                "matthieu@austral.dev",
-      "role":                                 "Developer"
-    }
-  ],
-  "require": {
-    "php":                                    "^8.0 || ^8.1 || ^8.2",
-
-    "austral/entity-bundle":                  "^3.1",
-
-    "symfony/routing":                        "^5.4 || ^6.4"
-  },
-  "require-dev": {
-  },
-  "config": {
-    "sort-packages":                          true
-  },
-  "autoload": {
-    "psr-4": { "Austral\\ListBundle\\": "" }
-  },
-  "minimum-stability":                        "dev"
+    "name": "austral/list-bundle",
+    "type": "symfony-bundle",
+    "description": "List mapper for Austral",
+    "keywords": [
+        "Austral",
+        "Mapper",
+        "List"
+    ],
+    "license": "MIT",
+    "homepage": "https://austral.dev",
+    "authors": [
+        {
+            "name": "Matthieu Beurel",
+            "email": "matthieu@austral.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.2 <9.0",
+        "austral/contracts": "^4.0",
+        "austral/entity-bundle": "^4.0",
+        "symfony/routing": "^7.4"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-symfony": "^2.0"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Austral\\ListBundle\\": ""
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

@@ -10,13 +10,17 @@
 
 namespace Austral\ListBundle\Column;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
+use Austral\Contracts\Translate\TranslateChildInterface;
+use Austral\Contracts\Translate\TranslateMasterInterface;
 use Austral\ListBundle\Column\Base\Column;
-use Austral\SeoBundle\Entity\Traits\UrlParameterTrait;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Austral Column Choice.
+ * @template T of object
+ *
+ * @extends Column<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -24,20 +28,15 @@ class Languages extends Column
 {
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $type = "languages";
-
-  /**
-   * @var array
-   */
-  protected array $values = array();
+  protected ?string $type = "languages";
 
   /**
    * Choices constructor.
    *
    * @param string|null $entitled
-   * @param array $options
+   * @param array<string, mixed> $options
    */
   public function __construct(?string $entitled = null, array $options = array())
   {
@@ -45,24 +44,20 @@ class Languages extends Column
   }
 
   /**
-   * @param OptionsResolver $resolver
-   */
-  protected function configureOptions(OptionsResolver $resolver)
-  {
-    parent::configureOptions($resolver);
-  }
-
-  /**
-   * @param EntityInterface|UrlParameterTrait $object
+   * @param EntityInterface<T> $object
    *
-   * @return array|null
+   * @return array<string, EntityInterface<T>>|null
    */
-  public function getter($object)
+  public function getter(EntityInterface $object): ?array
   {
     $languages = array();
-    foreach ($object->getTranslates() as  $translate)
+    if($object instanceof TranslateMasterInterface)
     {
-      $languages[$translate->getLanguage()] = $translate;
+      /** @var TranslateChildInterface<T> $translate */
+      foreach ($object->getTranslates() as  $translate)
+      {
+        $languages[$translate->getLanguage()] = $translate;
+      }
     }
     ksort($languages);
     return $languages;

@@ -10,8 +10,12 @@
 
 namespace Austral\ListBundle\Column\Interfaces;
 
+use Austral\Contracts\Entity\EntityInterface;
+
 /**
  * Austral Column Interface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
 interface ColumnInterface
@@ -27,7 +31,7 @@ interface ColumnInterface
    *
    * @return $this
    */
-  public function setId(string $id): ColumnInterface;
+  public function setId(string $id): self;
 
   /**
    * Get fieldname
@@ -42,7 +46,7 @@ interface ColumnInterface
    *
    * @return $this
    */
-  public function setFieldname(string $fieldname): ColumnInterface;
+  public function setFieldname(string $fieldname): self;
 
   /**
    * Get entitled
@@ -57,17 +61,17 @@ interface ColumnInterface
    *
    * @return $this
    */
-  public function setEntitled(string $entitled): ColumnInterface;
+  public function setEntitled(string $entitled): self;
 
   /**
    * Get type
-   * @return string
+   * @return string|null
    */
-  public function getType(): string;
+  public function getType(): ?string;
 
   /**
    * Get options
-   * @return array
+   * @return array<string, mixed>
    */
   public function getOptions(): array;
 
@@ -80,11 +84,11 @@ interface ColumnInterface
   /**
    * Set options
    *
-   * @param array $options
+   * @param array<string, mixed> $options
    *
    * @return $this
    */
-  public function setOptions(array $options): ColumnInterface;
+  public function setOptions(array $options): self;
 
   /**
    * Get attr
@@ -94,7 +98,7 @@ interface ColumnInterface
 
   /**
    * Get attr
-   * @return array
+   * @return array<string, mixed>
    */
   public function attr(): array;
 
@@ -105,11 +109,11 @@ interface ColumnInterface
   public function getSize(): ?string;
 
   /**
-   * @param string|null $size
+   * @param string $size
    *
    * @return $this
    */
-  public function setSize(?string $size): ColumnInterface;
+  public function setSize(string $size): self;
 
   /**
    * Get size
@@ -118,30 +122,53 @@ interface ColumnInterface
   public function getAlign(): ?string;
 
   /**
-   * @param string|null $align
+   * @param string $align
    *
    * @return $this
    */
-  public function setAlign(?string $align): ColumnInterface;
+  public function setAlign(string $align): self;
 
   /**
    * Get value
    * @return mixed
    */
-  public function getValue();
+  public function getValue(): mixed;
 
   /**
    * @param mixed $value
    *
    * @return $this
    */
-  public function setValue($value): ColumnInterface;
+  public function setValue(mixed $value): self;
 
   /**
    * getTranslateParameters
    *
-   * @return array
+   * @return array<string, mixed>
    */
   public function getTranslateParameters(): array;
+
+  /**
+   * class
+   *
+   * @param string $class
+   * @return string
+   */
+  public function class(string $class = ""): string;
+
+  /**
+   * @param EntityInterface<T> $object
+   *
+   * @return mixed
+   */
+  public function getter(EntityInterface $object): mixed;
+
+  /**
+   * @param string $key
+   * @param mixed $value
+   *
+   * @return $this
+   */
+  public function addAttr(string $key, mixed $value): self;
 
 }

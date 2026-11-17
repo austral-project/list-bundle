@@ -15,6 +15,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Austral Column With Path.
+ * @template T of object
+ *
+ * @extends  Column<T>
+ * @implements ColumnWithPathInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -27,19 +32,19 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
   protected ?string $path;
 
   /**
-   * @var array
+   * @var array<string, mixed>
    */
   protected array $pathAttributes = array();
 
   /**
    * EntityFieldList constructor.
    *
-   * @param $fieldname
+   * @param string $fieldname
    * @param string|null $entitled
    * @param string|null $path
-   * @param array $options
+   * @param array<string, mixed> $options
    */
-  public function __construct($fieldname, string $entitled = null, string $path = null, array $options = array())
+  public function __construct(string $fieldname, ?string $entitled = null, ?string $path = null, array $options = array())
   {
     parent::__construct($fieldname, $entitled, $options);
     $this->path = $path;
@@ -48,7 +53,7 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
   /**
    * @param OptionsResolver $resolver
    */
-  protected function configureOptions(OptionsResolver $resolver)
+  protected function configureOptions(OptionsResolver $resolver): void
   {
     parent::configureOptions($resolver);
     $resolver->setDefaults(array(
@@ -65,14 +70,14 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
   }
 
   /**
-   * @param array $pathAttributes
+   * @param array<string, mixed> $pathAttributes
    *
    * @return string|null
    */
   public function path(array $pathAttributes = array()): ?string
   {
     $pathAttributes = array_merge($this->pathAttributes, $pathAttributes);
-    return str_replace(array_keys($pathAttributes), array_values($pathAttributes), $this->path);
+    return $this->path ? str_replace(array_keys($pathAttributes), array_values($pathAttributes), $this->path) : null;
   }
 
   /**
@@ -80,25 +85,25 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
    *
    * @return $this
    */
-  public function setPath(?string $path): ColumnWithPath
+  public function setPath(?string $path): self
   {
     $this->path = $path;
     return $this;
   }
 
   /**
-   * @param array $pathAttributes
+   * @param array<string, mixed> $pathAttributes
    *
    * @return $this
    */
-  public function setPathAttributes(array $pathAttributes): ColumnWithPath
+  public function setPathAttributes(array $pathAttributes): self
   {
     $this->pathAttributes = $pathAttributes;
     return $this;
   }
 
   /**
-   * @return array
+   * @return array<string, mixed>
    */
   public function getPathAttributes(): array
   {
@@ -118,14 +123,14 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
    *
    * @return $this
    */
-  public function setTranslateDomain(string $translateDomain): ColumnWithPath
+  public function setTranslateDomain(string $translateDomain): self
   {
     $this->options['translateDomain'] = $translateDomain;
     return $this;
   }
 
   /**
-   * @return array
+   * @return array<string, mixed>
    */
   public function translateParameters(): array
   {
@@ -133,11 +138,11 @@ abstract class ColumnWithPath extends Column implements ColumnWithPathInterface
   }
 
   /**
-   * @param array $translateParameters
+   * @param array<string, mixed> $translateParameters
    *
    * @return $this
    */
-  public function setTranslateParameters(array $translateParameters): ColumnWithPath
+  public function setTranslateParameters(array $translateParameters): self
   {
     $this->options['translateParameters'] = $translateParameters;
     return $this;

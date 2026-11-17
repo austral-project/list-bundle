@@ -10,7 +10,7 @@
 
 namespace Austral\ListBundle\Section;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnActionInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnInterface;
 use Austral\ListBundle\Mapper\Base\MapperElement;
@@ -21,6 +21,10 @@ use function Symfony\Component\String\u;
 
 /**
  * Austral Section Value.
+ * @template T of object
+ *
+ * @extends MapperElement<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -28,7 +32,7 @@ class Section extends MapperElement
 {
 
   /**
-   * @var ListMapper
+   * @var ListMapper<T>
    */
   protected ListMapper $parent;
 
@@ -38,12 +42,12 @@ class Section extends MapperElement
   protected string $keyname;
 
   /**
-   * @var array
+   * @var array<string, Row<T>>
    */
   protected array $rows = array();
 
   /**
-   * @var array
+   * @var array<string, Row<T>>
    */
   protected array $allRows = array();
 
@@ -53,7 +57,7 @@ class Section extends MapperElement
   protected bool $objectInitialise = false;
 
   /**
-   * @var array
+   * @var array<int, T>
    */
   protected array $objects = array();
 
@@ -63,7 +67,7 @@ class Section extends MapperElement
   protected bool $columnActionsDefined = false;
 
   /**
-   * @var array
+   * @var array<int, ColumnInterface<T>>
    */
   protected array $headerColumns = array();
 
@@ -83,15 +87,21 @@ class Section extends MapperElement
   protected string $mapperType = "table";
 
   /**
-   * @var mixed
+   * @var \Closure(object|null):mixed|null
    */
-  protected $childrenRowMethod = null;
+  protected ?\Closure $childrenRowMethod = null;
 
   /**
-   * @var array
+   * @var array<string, mixed>
    */
   protected array $sortableOptions = array();
 
+  /**
+   * Section constructor
+   *
+   * @param ListMapper<T> $parent
+   * @param string $keyname
+   */
   public function __construct(ListMapper $parent, string $keyname)
   {
     $this->parent = $parent;
@@ -100,7 +110,7 @@ class Section extends MapperElement
   }
 
   /**
-   * @return array
+   * @return array<string, mixed>
    */
   public function getSortableOptions(): array
   {
@@ -108,11 +118,11 @@ class Section extends MapperElement
   }
 
   /**
-   * @param array $sortableOptions
+   * @param array<string, mixed> $sortableOptions
    *
-   * @return Section
+   * @return $this
    */
-  public function setSortableOptions(array $sortableOptions): Section
+  public function setSortableOptions(array $sortableOptions): self
   {
     $resolver = new OptionsResolver();
     $resolver->setDefaults(array(
@@ -125,7 +135,7 @@ class Section extends MapperElement
   }
 
   /**
-   * @return ListMapper
+   * @return ListMapper<T>
    */
   public function end(): ListMapper
   {
@@ -137,16 +147,16 @@ class Section extends MapperElement
    *
    * @return $this
    */
-  public function setTitle(string $title): Section
+  public function setTitle(string $title): self
   {
     $this->title = $title;
     return $this;
   }
 
   /**
-   * @return string
+   * @return string|null
    */
-  public function getTitle(): string
+  public function getTitle(): ?string
   {
     return $this->title ?? $this->parent->getTitle();
   }
@@ -156,7 +166,7 @@ class Section extends MapperElement
    *
    * @return $this
    */
-  public function setSubTitle(?string $subTitle): Section
+  public function setSubTitle(?string $subTitle): self
   {
     $this->subTitle = $subTitle;
     return $this;
@@ -183,7 +193,7 @@ class Section extends MapperElement
    *
    * @return $this
    */
-  public function setKeyname(string $keyname): Section
+  public function setKeyname(string $keyname): self
   {
     $this->keyname = $keyname;
     return $this;
@@ -211,14 +221,14 @@ class Section extends MapperElement
    * @param bool $objectInitialise
    * @return $this
    */
-  public function setObjectInitialise(bool $objectInitialise): Section
+  public function setObjectInitialise(bool $objectInitialise): self
   {
     $this->objectInitialise = $objectInitialise;
     return $this;
   }
 
   /**
-   * @return array
+   * @return array<int, T>
    */
   public function getObjects(): array
   {
@@ -226,11 +236,11 @@ class Section extends MapperElement
   }
 
   /**
-   * @param array $objects
+   * @param array<T> $objects
    *
    * @return $this
    */
-  public function setObjects(array $objects): Section
+  public function setObjects(array $objects): self
   {
     $this->setObjectInitialise(true);
     $this->objects = $objects;
@@ -242,7 +252,7 @@ class Section extends MapperElement
    *
    * @return $this
    */
-  public function setCountAll(int $countAll = 0): Section
+  public function setCountAll(int $countAll = 0): self
   {
     $this->countAll = $countAll;
     return $this;
@@ -269,18 +279,18 @@ class Section extends MapperElement
    *
    * @return $this
    */
-  public function setCountPaginator(int $countPaginator): Section
+  public function setCountPaginator(int $countPaginator): self
   {
     $this->countPaginator = $countPaginator;
     return $this;
   }
 
   /**
-   * @param $method
+   * @param \Closure(object|null):mixed $method
    *
    * @return $this
    */
-  public function childrenRow($method): Section
+  public function childrenRow(\Closure $method): self
   {
     $this->childrenRowMethod = $method;
     return $this;
@@ -289,9 +299,9 @@ class Section extends MapperElement
   /**
    * @return $this
    */
-  public function generateRows(): Section
+  public function generateRows(): self
   {
-    /** @var EntityInterface $object */
+    /** @var EntityInterface<T> $object */
     foreach($this->getObjects() as $object)
     {
       $row = new Row($this, $object);
@@ -313,9 +323,9 @@ class Section extends MapperElement
   }
 
   /**
-   * @param Row $rowParent
+   * @param Row<T> $rowParent
    */
-  protected function addChildrenRow(Row $rowParent)
+  protected function addChildrenRow(Row $rowParent): void
   {
 
     if (\is_callable($this->childrenRowMethod))
@@ -330,7 +340,7 @@ class Section extends MapperElement
     }
     if($children)
     {
-      /** @var EntityInterface $object */
+      /** @var EntityInterface<T> $object */
       foreach($children as $object)
       {
         $rowChild = new Row($this, $object);
@@ -347,7 +357,7 @@ class Section extends MapperElement
 
 
   /**
-   * @return array
+   * @return array<int, ColumnInterface<T>>
    */
   public function headerColumns(): array
   {
@@ -355,7 +365,7 @@ class Section extends MapperElement
   }
 
   /**
-   * @return array
+   * @return array<string, Row<T>>
    */
   public function rows(): array
   {
@@ -363,25 +373,25 @@ class Section extends MapperElement
   }
 
   /**
-   * @param array $columns
+   * @param array<ColumnInterface<T>> $columns
    *
-   * @return Section
+   * @return $this
    */
-  public function addColumns(array $columns): Section
+  public function addColumns(array $columns): self
   {
     $this->headerColumns = array_merge($columns, $this->headerColumns);
     return $this;
   }
 
   /**
-   * @param ColumnActionInterface|ColumnInterface $action
+   * @param ColumnActionInterface<T> $action
    *
    * @return $this
    */
-  public function addColumnAction(ColumnActionInterface $action): Section
+  public function addColumnAction(ColumnActionInterface $action): self
   {
     $this->columnActionsDefined = true;
-    /** @var Row $row */
+    /** @var Row<T> $row */
     foreach ($this->allRows as $row)
     {
       $actionByRow = clone $action;
@@ -391,7 +401,7 @@ class Section extends MapperElement
   }
 
   /**
-   * @return ListMapper
+   * @return ListMapper<T>
    */
   public function getParent(): ListMapper
   {
@@ -399,11 +409,11 @@ class Section extends MapperElement
   }
 
   /**
-   * @param ListMapper $parent
+   * @param ListMapper<T> $parent
    *
    * @return $this
    */
-  public function setParent(ListMapper $parent): Section
+  public function setParent(ListMapper $parent): self
   {
     $this->parent = $parent;
     return $this;
@@ -418,9 +428,9 @@ class Section extends MapperElement
   }
 
   /**
-   * @return false|float
+   * @return float|int
    */
-  public function getNbPages()
+  public function getNbPages(): float|int
   {
     return $this->countPaginator > 0 ? ceil($this->countPaginator / $this->getMaxResult()) : 0;
   }

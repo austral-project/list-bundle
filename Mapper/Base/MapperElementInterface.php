@@ -17,44 +17,46 @@ use Austral\ListBundle\Mapper\ListMapper;
 
 /**
  * Austral Mapper Element Interface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
- * @implements
+ * @interface
  */
 interface MapperElementInterface
 {
 
   /**
-   * @return string
+   * @return string|null
    */
-  public function getTitle(): string;
+  public function getTitle(): ?string;
 
   /**
    * @param string $title
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setTitle(string $title): MapperElementInterface;
+  public function setTitle(string $title): self;
 
   /**
-   * @return string
+   * @return string|null
    */
   public function getSubTitle(): ?string;
 
   /**
    * @param string $subTitle
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setSubTitle(string $subTitle): MapperElementInterface;
+  public function setSubTitle(string $subTitle): self;
 
   /**
-   * @param ColumnInterface $column
+   * @param ColumnInterface<T> $column
    * @param string|null $size
    * @param string|null $align
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function addColumn(ColumnInterface $column, ?string $size = ListMapper::SIZE_AUTO, ?string $align = ListMapper::COL_ALIGN_LEFT): MapperElementInterface;
+  public function addColumn(ColumnInterface $column, ?string $size = ListMapper::SIZE_AUTO, ?string $align = ListMapper::COL_ALIGN_LEFT): self;
 
   /**
    * @return string
@@ -64,20 +66,21 @@ interface MapperElementInterface
   /**
    * @param string $translateDomain
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setTranslateDomain(string $translateDomain): MapperElementInterface;
+  public function setTranslateDomain(string $translateDomain): self;
 
   /**
-   * @return FilterMapperInterface|null
+   * @return FilterMapperInterface<T>|null
    */
   public function getFilter(): ?FilterMapperInterface;
+
   /**
-   * @param FilterMapperInterface $filter
+   * @param FilterMapperInterface<T> $filter
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setFilter(FilterMapperInterface $filter): MapperElementInterface;
+  public function setFilter(FilterMapperInterface $filter): self;
 
   /**
    * @return string
@@ -85,25 +88,30 @@ interface MapperElementInterface
   public function getMapperType(): string;
 
   /**
-   * @param DataHydrateInterface $dataHydrate
-   *
-   * @return $this
+   * @return DataHydrateInterface<T>|null
    */
-  public function setDataHydrate(DataHydrateInterface $dataHydrate): MapperElementInterface;
+  public function getDataHydrate(): ?DataHydrateInterface;
 
   /**
-   * @param \Closure|null $closure
+   * @param DataHydrateInterface<T> $dataHydrate
    *
    * @return $this
    */
-  public function buildDataHydrate(\Closure $closure = null): MapperElementInterface;
+  public function setDataHydrate(DataHydrateInterface $dataHydrate): self;
+
+  /**
+   * @param \Closure(object|null): mixed|null $closure
+   *
+   * @return $this
+   */
+  public function buildDataHydrate(?\Closure $closure = null): self;
 
   /**
    * @param string $mapperType
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setMapperType(string $mapperType): MapperElementInterface;
+  public function setMapperType(string $mapperType): self;
 
   /**
    * @return int|null
@@ -113,9 +121,9 @@ interface MapperElementInterface
   /**
    * @param int|null $maxResult
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setMaxResult(?int $maxResult): MapperElementInterface;
+  public function setMaxResult(?int $maxResult): self;
 
   /**
    * @return int
@@ -125,9 +133,9 @@ interface MapperElementInterface
   /**
    * @param int $offset
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setOffset(int $offset): MapperElementInterface;
+  public function setOffset(int $offset): self;
 
   /**
    * @return int
@@ -137,9 +145,9 @@ interface MapperElementInterface
   /**
    * @param int $numPage
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setNumPage(int $numPage): MapperElementInterface;
+  public function setNumPage(int $numPage): self;
 
   /**
    * @return string
@@ -149,8 +157,8 @@ interface MapperElementInterface
   /**
    * @param string $typePagination
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setTypePagination(string $typePagination): MapperElementInterface;
+  public function setTypePagination(string $typePagination): self;
 
 }

@@ -12,9 +12,14 @@ namespace Austral\ListBundle\Column\Interfaces;
 
 /**
  * Austral Action Column Interface.
+ * @template T of object
+ *
+ * @extends ColumnInterface<T>
+ * @extends ColumnWithPathInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
-interface ColumnActionInterface
+interface ColumnActionInterface extends ColumnInterface, ColumnWithPathInterface
 {
 
   /**
@@ -26,9 +31,9 @@ interface ColumnActionInterface
   /**
    * @param string $keyname
    *
-   * @return ColumnActionInterface
+   * @return $this
    */
-  public function setKeyname(string $keyname): ColumnActionInterface;
+  public function setKeyname(string $keyname): self;
 
   /**
    * Get picto
@@ -39,7 +44,7 @@ interface ColumnActionInterface
   /**
    * @param string|null $picto
    *
-   * @return ColumnActionInterface
+   * @return $this
    */
-  public function setPicto(?string $picto): ColumnActionInterface;
+  public function setPicto(?string $picto): self;
 }

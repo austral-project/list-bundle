@@ -15,6 +15,8 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Austral Form Event.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -28,7 +30,7 @@ class ListEvent extends Event
   protected string $keyname;
 
   /**
-   * @var DataHydrateInterface
+   * @var DataHydrateInterface<T>
    */
   protected DataHydrateInterface $dataHydrate;
 
@@ -36,7 +38,7 @@ class ListEvent extends Event
    * FormEvent constructor.
    *
    * @param string $keyname
-   * @param DataHydrateInterface $dataHydrate
+   * @param DataHydrateInterface<T> $dataHydrate
    */
   public function __construct(string $keyname, DataHydrateInterface $dataHydrate)
   {
@@ -45,7 +47,7 @@ class ListEvent extends Event
   }
 
   /**
-   * @return DataHydrateInterface
+   * @return DataHydrateInterface<T>
    */
   public function getDataHydrate(): DataHydrateInterface
   {
@@ -53,7 +55,7 @@ class ListEvent extends Event
   }
 
   /**
-   * @param DataHydrateInterface $dataHydrate
+   * @param DataHydrateInterface<T> $dataHydrate
    *
    * @return $this
    */

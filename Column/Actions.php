@@ -12,11 +12,16 @@ namespace Austral\ListBundle\Column;
 
 use Austral\ListBundle\Column\Base\ColumnWithPath;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnActionInterface;
 
 /**
  * Austral Column Action.
+ * @template T of object
+ *
+ * @extends ColumnWithPath<T>
+ * @implements ColumnActionInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -34,12 +39,12 @@ class Actions extends ColumnWithPath implements ColumnActionInterface
   protected string $keyname;
 
   /**
-   * @var array
+   * @var array<string, ColumnActionInterface<T>>
    */
   protected array $actions = array();
 
   /**
-   * @var EntityInterface|null
+   * @var EntityInterface<T>|null
    */
   protected ?EntityInterface $object = null;
 
@@ -47,12 +52,12 @@ class Actions extends ColumnWithPath implements ColumnActionInterface
    * Choices constructor.
    *
    * @param string $keyname
-   * @param string $entitled
+   * @param string|null $entitled
    * @param string|null $path
    * @param string|null $picto
-   * @param array $options
+   * @param array<string, mixed> $options
    */
-  public function __construct(string $keyname, string $entitled, string $path = null, string $picto = null, array $options = array())
+  public function __construct(string $keyname, ?string $entitled, ?string $path = null, ?string $picto = null, array $options = array())
   {
     parent::__construct("_action.{$keyname}", $entitled, $path, $options);
     $this->keyname = $keyname;
@@ -61,18 +66,32 @@ class Actions extends ColumnWithPath implements ColumnActionInterface
   }
 
   /**
-   * @param ColumnActionInterface $action
+   * @param ColumnActionInterface<T> $action
    *
    * @return $this
    */
-  public function addAction(ColumnActionInterface $action): Actions
+  public function addAction(ColumnActionInterface $action): self
   {
     $this->actions[$action->keyname()] = $action;
     return $this;
   }
 
   /**
-   * @return array
+   * @param list<ColumnActionInterface<T>> $actions
+   *
+   * @return $this
+   */
+  public function addActions(array $actions): self
+  {
+    foreach($actions as $action)
+    {
+      $this->addAction($action);
+    }
+    return $this;
+  }
+
+  /**
+   * @return array<string, ColumnActionInterface<T>>
    */
   public function actions(): array
   {
@@ -91,9 +110,9 @@ class Actions extends ColumnWithPath implements ColumnActionInterface
   /**
    * @param string $keyname
    *
-   * @return Actions
+   * @return $this
    */
-  public function setKeyname(string $keyname): Actions
+  public function setKeyname(string $keyname): self
   {
     $this->keyname = $keyname;
     return $this;
@@ -111,9 +130,9 @@ class Actions extends ColumnWithPath implements ColumnActionInterface
   /**
    * @param string|null $picto
    *
-   * @return Actions
+   * @return $this
    */
-  public function setPicto(?string $picto): Actions
+  public function setPicto(?string $picto): self
   {
     $this->picto = $picto;
     return $this;
@@ -124,10 +143,10 @@ class Actions extends ColumnWithPath implements ColumnActionInterface
    *
    * @return $this
    */
-  public function setTranslateDomain(string $translateDomain): ColumnWithPath
+  public function setTranslateDomain(string $translateDomain): self
   {
     parent::setTranslateDomain($translateDomain);
-    /** @var Action $action */
+    /** @var Action<T> $action */
     foreach($this->actions() as $action)
     {
       $action->setTranslateDomain($translateDomain);

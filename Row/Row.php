@@ -10,17 +10,20 @@
 
 namespace Austral\ListBundle\Row;
 
+use Austral\ListBundle\Column\Date;
 use Austral\ListBundle\Column\Interfaces\ColumnActionInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnWithPathInterface;
 use Austral\ListBundle\Section\Section;
 use Austral\ToolsBundle\AustralTools;
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
  * Austral Row Value.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -28,12 +31,12 @@ class Row
 {
 
   /**
-   * @var EntityInterface
+   * @var EntityInterface<T>
    */
   protected EntityInterface $object;
 
   /**
-   * @var Section
+   * @var Section<T>
    */
   protected Section $section;
 
@@ -43,30 +46,30 @@ class Row
   protected PropertyAccessorInterface $propertyAccessor;
 
   /**
-   * @var array
+   * @var array<int, ColumnInterface<T>>
    */
   protected array $columns = array();
 
   /**
-   * @var array
+   * @var array<int|string, Row<T>>
    */
   protected array $children = array();
 
   /**
-   * @var array
+   * @var array<int, ColumnActionInterface<T>>
    */
   protected array $columnsActions = array();
 
   /**
-   * @var ColumnActionInterface|ColumnInterface
+   * @var ColumnActionInterface<T>|null
    */
-  protected $editAction = null;
+  protected ?ColumnActionInterface $editAction = null;
 
   /**
    * Row constructor.
    *
-   * @param Section $section
-   * @param EntityInterface $object
+   * @param Section<T> $section
+   * @param EntityInterface<T> $object
    */
   public function __construct(Section $section, EntityInterface $object)
   {
@@ -86,23 +89,23 @@ class Row
   }
 
   /**
-   * @param string|null $class
+   * @param string $class
    *
    * @return string
    */
-  public function class(string $class = ""): ?string
+  public function class(string $class = ""): string
   {
     $array = array();
     if($class) $array[] = $class;
     $array[] = "row-element";
     if($this->editAction) {
-      $array[] .= "has-link";
+      $array[] = "has-link";
     }
     return implode(" ", $array);
   }
 
   /**
-   * @return array
+   * @return array<string, string>
    */
   public function attr(): array
   {
@@ -128,7 +131,7 @@ class Row
   }
 
   /**
-   * @return EntityInterface
+   * @return EntityInterface<T>
    */
   public function getObject(): EntityInterface
   {
@@ -136,7 +139,7 @@ class Row
   }
 
   /**
-   * @return array
+   * @return array<int, ColumnInterface<T>>
    */
   public function columns(): array
   {
@@ -144,7 +147,7 @@ class Row
   }
 
   /**
-   * @return array
+   * @return array<int, ColumnActionInterface<T>>
    */
   public function columnsActions(): array
   {
@@ -152,17 +155,17 @@ class Row
   }
 
   /**
-   * @return ColumnActionInterface|ColumnInterface
+   * @return ColumnActionInterface<T>|null
    */
-  public function editAction(): ColumnActionInterface
+  public function editAction(): ?ColumnActionInterface
   {
     return $this->editAction;
   }
 
   /**
-   * @param ColumnInterface $column
+   * @param ColumnInterface<T> $column
    *
-   * @return Row
+   * @return Row<T>
    */
   public function addColumn(ColumnInterface $column): Row
   {
@@ -175,7 +178,7 @@ class Row
       if($value === "_function_disabled")
       {
         $value = $this->propertyAccessor->getValue($this->object, $columnByObject->getFieldname());
-        if($columnByObject->getType() == "date" && $value)
+        if($columnByObject instanceof Date && $value)
         {
           $value = $value->format($columnByObject->getFormat());
         }
@@ -195,9 +198,9 @@ class Row
   }
 
   /**
-   * @param ColumnActionInterface|ColumnWithPathInterface|ColumnInterface $columnAction
+   * @param ColumnActionInterface<T> $columnAction
    *
-   * @return Row
+   * @return Row<T>
    */
   public function addColumnAction(ColumnActionInterface $columnAction): Row
   {
@@ -215,23 +218,25 @@ class Row
   }
 
   /**
-   * @param ColumnWithPathInterface $column
+   * @param ColumnWithPathInterface<T> $column
    */
-  protected function replacePathAttributes(ColumnWithPathInterface $column)
+  protected function replacePathAttributes(ColumnWithPathInterface $column): void
   {
     $pathAttributes = $column->getPathAttributes();
-    $path = $column->path();
-    preg_match_all("/__(\w*)__/iuU", $path, $matches, PREG_SET_ORDER);
-    foreach($matches as $matche)
+    if($path = $column->path())
     {
-      $getter = AustralTools::createGetterFunction($matche[1]);
-      if(method_exists($this->object, $getter))
+      preg_match_all("/__(\w*)__/iuU", $path, $matches, PREG_SET_ORDER);
+      foreach($matches as $matche)
       {
-        $pathAttributes[$matche[0]] = $this->object->$getter();
-      }
-      else
-      {
-        $pathAttributes[$matche[0]] = "NONE";
+        $getter = AustralTools::createGetterFunction($matche[1]);
+        if(method_exists($this->object, $getter))
+        {
+          $pathAttributes[$matche[0]] = $this->object->$getter();
+        }
+        else
+        {
+          $pathAttributes[$matche[0]] = "NONE";
+        }
       }
     }
     $column->setPathAttributes($pathAttributes);
@@ -242,7 +247,7 @@ class Row
   }
 
   /**
-   * @param Row $rowChild
+   * @param Row<T> $rowChild
    *
    * @return $this
    */
@@ -253,7 +258,7 @@ class Row
   }
 
   /**
-   * @return array
+   * @return array<int|string, Row<T>>
    */
   public function children(): array
   {

@@ -14,6 +14,10 @@ use Austral\ListBundle\Column\Base\Column;
 
 /**
  * Austral Column Image.
+ * @template T of object
+ *
+ * @extends Column<object>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -21,9 +25,9 @@ class Image extends Column
 {
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $type = "image";
+  protected ?string $type = "image";
 
   /**
    * @var string|null
@@ -35,10 +39,10 @@ class Image extends Column
    *
    * @param string $fieldname
    * @param string|null $entitled
-   * @param array $options
+   * @param array<string, mixed> $options
    * @param string|null $defaultTemplate
    */
-  public function __construct(string $fieldname, ?string $entitled = null, array $options = array(), string $defaultTemplate = null)
+  public function __construct(string $fieldname, ?string $entitled = null, array $options = array(), ?string $defaultTemplate = null)
   {
     parent::__construct($fieldname, $entitled, $options);
     $this->defaultTemplate = $defaultTemplate;

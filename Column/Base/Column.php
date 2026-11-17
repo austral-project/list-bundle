@@ -10,11 +10,16 @@
 
 namespace Austral\ListBundle\Column\Base;
 
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\ListBundle\Column\Interfaces\ColumnInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Austral Column.
+ * @template T of object
+ *
+ * @implements ColumnInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -31,7 +36,7 @@ abstract class Column implements ColumnInterface
   protected string $entitled;
 
   /**
-   * @var array
+   * @var array<string, mixed>
    */
   protected array $options;
 
@@ -41,7 +46,7 @@ abstract class Column implements ColumnInterface
   protected ?string $class = null;
 
   /**
-   * @var array
+   * @var array<string, mixed>
    */
   protected array $attr = array();
 
@@ -61,19 +66,19 @@ abstract class Column implements ColumnInterface
   protected ?string $align = null;
 
   /**
-   * @var \Closure|null
+   * @var \Closure(object|null): mixed|null
    */
   protected ?\Closure $getter = null;
 
   /**
    * @var mixed
    */
-  protected $value;
+  protected mixed $value = null;
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $type;
+  protected ?string $type = null;
 
   /**
    * @var string|null
@@ -83,11 +88,11 @@ abstract class Column implements ColumnInterface
   /**
    * EntityFieldList constructor.
    *
-   * @param $fieldname
+   * @param string $fieldname
    * @param string|null $entitled
-   * @param array $options
+   * @param array<string, mixed> $options
    */
-  public function __construct($fieldname, ?string $entitled = null, array $options = array())
+  public function __construct(string $fieldname, ?string $entitled = null, array $options = array())
   {
     $resolver = new OptionsResolver();
     $this->configureOptions($resolver);
@@ -105,7 +110,7 @@ abstract class Column implements ColumnInterface
   /**
    * @param OptionsResolver $resolver
    */
-  protected function configureOptions(OptionsResolver $resolver)
+  protected function configureOptions(OptionsResolver $resolver): void
   {
     $resolver->setDefaults(array(
         "language"        =>  false,
@@ -127,8 +132,7 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * Get fieldname
-   * @return string
+   * @inheritDoc
    */
   public function getFieldname(): string
   {
@@ -136,21 +140,16 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * Set fieldname
-   *
-   * @param string $fieldname
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function setFieldname(string $fieldname): ColumnInterface
+  public function setFieldname(string $fieldname): self
   {
     $this->fieldname = $fieldname;
     return $this;
   }
 
   /**
-   * Get size
-   * @return string|null
+   * @inheritDoc
    */
   public function getSize(): ?string
   {
@@ -158,11 +157,9 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * @param string|null $size
-   *
-   * @return Column
+   * @inheritDoc
    */
-  public function setSize(?string $size): Column
+  public function setSize(string $size): self
   {
     $this->size = $size;
     return $this;
@@ -178,19 +175,16 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * @param string|null $align
-   *
-   * @return Column
+   * @inheritDoc
    */
-  public function setAlign(?string $align): Column
+  public function setAlign(string $align): self
   {
     $this->align = $align;
     return $this;
   }
 
   /**
-   * Get entitled
-   * @return string
+   * @inheritDoc
    */
   public function getEntitled(): string
   {
@@ -198,11 +192,7 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * Set entitled
-   *
-   * @param string $entitled
-   *
-   * @return $this
+   * @inheritDoc
    */
   public function setEntitled(string $entitled): ColumnInterface
   {
@@ -211,17 +201,15 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * Get type
-   * @return string
+   * @inheritDoc
    */
-  public function getType(): string
+  public function getType(): ?string
   {
     return $this->type;
   }
 
   /**
-   * Get options
-   * @return array
+   * @inheritDoc
    */
   public function getOptions(): array
   {
@@ -229,7 +217,7 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * @return bool
+   * @inheritDoc
    */
   public function withLanguage(): bool
   {
@@ -237,24 +225,18 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * Set options
-   *
-   * @param array $options
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function setOptions(array $options): ColumnInterface
+  public function setOptions(array $options): self
   {
     $this->options = $options;
     return $this;
   }
 
   /**
-   * @param string|null $class
-   *
-   * @return string
+   * @inheritDoc
    */
-  public function class(string $class = ""): ?string
+  public function class(string $class = ""): string
   {
     return $class.($this->class ? " {$this->class}" : "");
   }
@@ -279,12 +261,9 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * @param $key
-   * @param $value
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function addAttr($key, $value): Column
+  public function addAttr(string $key, mixed $value): self
   {
     $this->options['attr'][$key] = $value;
     return $this;
@@ -293,7 +272,7 @@ abstract class Column implements ColumnInterface
   /**
    * @return string
    */
-  public function attrString(): ?string
+  public function attrString(): string
   {
     $return = "";
     foreach($this->attr as $key => $value)
@@ -304,7 +283,7 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * @return array
+   * @return array<string, string>
    */
   public function attr(): array
   {
@@ -315,28 +294,24 @@ abstract class Column implements ColumnInterface
    * Get value
    * @return mixed
    */
-  public function getValue()
+  public function getValue(): mixed
   {
     return $this->value;
   }
 
   /**
-   * @param mixed $value
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function setValue($value): Column
+  public function setValue(mixed $value): self
   {
     $this->value = $value;
     return $this;
   }
 
   /**
-   * @param $object
-   *
-   * @return mixed|null
+   * @inheritDoc
    */
-  public function getter($object)
+  public function getter(EntityInterface $object): mixed
   {
     if($this->getter instanceof \Closure)
     {
@@ -346,9 +321,7 @@ abstract class Column implements ColumnInterface
   }
 
   /**
-   * getTranslateParameters
-   *
-   * @return array
+   * @inheritDoc
    */
   public function getTranslateParameters(): array
   {

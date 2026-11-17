@@ -13,8 +13,10 @@ namespace Austral\ListBundle\Filter;
 
 /**
  * Austral Filter Elements Interface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
- * @implements
+ * @interface
  */
 interface FilterMapperInterface
 {

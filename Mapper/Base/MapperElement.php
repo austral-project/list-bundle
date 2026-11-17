@@ -17,6 +17,10 @@ use Austral\ListBundle\Mapper\ListMapper;
 
 /**
  * Austral Mapper Element.
+ * @template T of object
+ *
+ * @implements MapperElementInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -44,7 +48,7 @@ abstract class MapperElement implements MapperElementInterface
   protected string $mapperType = "table";
 
   /**
-   * @var array
+   * @var array<int, ColumnInterface<T>>
    */
   protected array $headerColumns = array();
 
@@ -54,12 +58,12 @@ abstract class MapperElement implements MapperElementInterface
   protected ?string $filterKeyname = null;
 
   /**
-   * @var DataHydrateInterface
+   * @var DataHydrateInterface<T>|null
    */
-  protected DataHydrateInterface $dataHydrate;
+  protected ?DataHydrateInterface $dataHydrate = null;
 
   /**
-   * @var FilterMapperInterface|null
+   * @var FilterMapperInterface<T>|null
    */
   protected ?FilterMapperInterface $filter = null;
 
@@ -69,30 +73,26 @@ abstract class MapperElement implements MapperElementInterface
   protected string $typePagination = ListMapper::PAGINATION_DEFAULT;
 
   /**
-   * @return DataHydrateInterface
+   * @inheritDoc
    */
-  public function getDataHydrate(): DataHydrateInterface
+  public function getDataHydrate(): ?DataHydrateInterface
   {
     return $this->dataHydrate;
   }
 
   /**
-   * @param DataHydrateInterface $dataHydrate
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function setDataHydrate(DataHydrateInterface $dataHydrate): MapperElementInterface
+  public function setDataHydrate(DataHydrateInterface $dataHydrate): self
   {
     $this->dataHydrate = $dataHydrate;
     return $this;
   }
 
   /**
-   * @param \Closure|null $closure
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function buildDataHydrate(\Closure $closure = null): MapperElementInterface
+  public function buildDataHydrate(?\Closure $closure = null): self
   {
     if($closure instanceof \Closure)
     {
@@ -102,26 +102,24 @@ abstract class MapperElement implements MapperElementInterface
   }
 
   /**
-   * @return string
+   * @inheritDoc
    */
-  public function getTitle(): string
+  public function getTitle(): ?string
   {
     return $this->title;
   }
 
   /**
-   * @param string $title
-   *
-   * @return MapperElementInterface
+   * @inheritDoc
    */
-  public function setTitle(string $title): MapperElementInterface
+  public function setTitle(string $title): self
   {
     $this->title = $title;
     return $this;
   }
 
   /**
-   * @return string
+   * @inheritDoc
    */
   public function getSubTitle(): ?string
   {
@@ -129,24 +127,22 @@ abstract class MapperElement implements MapperElementInterface
   }
 
   /**
-   * @param string $subTitle
-   *
-   * @return MapperElementInterface
+   * @inheritDoc
    */
-  public function setSubTitle(string $subTitle): MapperElementInterface
+  public function setSubTitle(string $subTitle): self
   {
     $this->subTitle = $subTitle;
     return $this;
   }
 
   /**
-   * @param ColumnInterface $column
+   * @param ColumnInterface<T> $column
    * @param string|null $size
    * @param string|null $align
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function addColumn(ColumnInterface $column, ?string $size = ListMapper::SIZE_AUTO, ?string $align = ListMapper::COL_ALIGN_LEFT): MapperElementInterface
+  public function addColumn(ColumnInterface $column, ?string $size = ListMapper::SIZE_AUTO, ?string $align = ListMapper::COL_ALIGN_LEFT): self
   {
     $this->headerColumns[] = $column->setSize($size ?? ListMapper::SIZE_AUTO)->setAlign($align ?? ListMapper::COL_ALIGN_LEFT);
     return $this;
@@ -163,9 +159,9 @@ abstract class MapperElement implements MapperElementInterface
   /**
    * @param string $translateDomain
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setTranslateDomain(string $translateDomain): MapperElementInterface
+  public function setTranslateDomain(string $translateDomain): self
   {
     $this->translateDomain = $translateDomain;
     return $this;
@@ -182,16 +178,16 @@ abstract class MapperElement implements MapperElementInterface
   /**
    * @param string|null $filterKeyname
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setFilterKeyname(?string $filterKeyname): MapperElementInterface
+  public function setFilterKeyname(?string $filterKeyname): self
   {
     $this->filterKeyname = $filterKeyname;
     return $this;
   }
 
   /**
-   * @return FilterMapperInterface|null
+   * @return FilterMapperInterface<T>|null
    */
   public function getFilter(): ?FilterMapperInterface
   {
@@ -199,11 +195,11 @@ abstract class MapperElement implements MapperElementInterface
   }
 
   /**
-   * @param FilterMapperInterface $filter
+   * @param FilterMapperInterface<T> $filter
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setFilter(FilterMapperInterface $filter): MapperElementInterface
+  public function setFilter(FilterMapperInterface $filter): self
   {
     $this->filter = $filter;
     return $this;
@@ -220,9 +216,9 @@ abstract class MapperElement implements MapperElementInterface
   /**
    * @param string $mapperType
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setMapperType(string $mapperType): MapperElementInterface
+  public function setMapperType(string $mapperType): self
   {
     $this->mapperType = $mapperType;
     return $this;
@@ -233,17 +229,17 @@ abstract class MapperElement implements MapperElementInterface
    */
   public function getMaxResult(): ?int
   {
-    return $this->dataHydrate->getMaxResult();
+    return $this->dataHydrate?->getMaxResult();
   }
 
   /**
    * @param int|null $maxResult
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setMaxResult(?int $maxResult): MapperElementInterface
+  public function setMaxResult(?int $maxResult): self
   {
-    $this->dataHydrate->setMaxResult($maxResult);
+    $this->dataHydrate?->setMaxResult($maxResult);
     return $this;
   }
 
@@ -252,17 +248,17 @@ abstract class MapperElement implements MapperElementInterface
    */
   public function getOffset(): int
   {
-    return $this->dataHydrate->getOffset();
+    return $this->dataHydrate?->getOffset() ?? 0;
   }
 
   /**
    * @param int $offset
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setOffset(int $offset): MapperElementInterface
+  public function setOffset(int $offset): self
   {
-    $this->dataHydrate->setOffset($offset);
+    $this->dataHydrate?->setOffset($offset);
     return $this;
   }
 
@@ -271,17 +267,17 @@ abstract class MapperElement implements MapperElementInterface
    */
   public function getNumPage(): int
   {
-    return $this->dataHydrate->getNumPage();
+    return $this->dataHydrate?->getNumPage() ?? 1;
   }
 
   /**
    * @param int $numPage
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setNumPage(int $numPage): MapperElementInterface
+  public function setNumPage(int $numPage): self
   {
-    $this->dataHydrate->setNumPage($numPage);
+    $this->dataHydrate?->setNumPage($numPage);
     return $this;
   }
 
@@ -296,9 +292,9 @@ abstract class MapperElement implements MapperElementInterface
   /**
    * @param string $typePagination
    *
-   * @return MapperElementInterface
+   * @return $this
    */
-  public function setTypePagination(string $typePagination): MapperElementInterface
+  public function setTypePagination(string $typePagination): self
   {
     $this->typePagination = $typePagination;
     return $this;

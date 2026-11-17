@@ -10,28 +10,37 @@
 
 namespace Austral\ListBundle\DataHydrate;
 
+use Austral\EntityBundle\EntityManager\EntityManagerORMInterface;
 use Austral\ListBundle\Filter\FilterInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral DataHydrate.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
- * @implements
+ * @interface
  */
 interface DataHydrateInterface
 {
 
   /**
-   * @param DataHydrateInterface|null $dataHydrate
+   * @param DataHydrateInterface<T>|null $dataHydrate
    */
-  public function __construct(DataHydrateInterface $dataHydrate = null);
+  public function __construct(?DataHydrateInterface $dataHydrate = null);
 
   /**
    * @param string $keyname
-   * @param DataHydrateInterface|null $dataHydrate
-   * @return DataHydrateInterface
+   * @param DataHydrateInterface<T>|null $dataHydrate
+   * @return DataHydrateInterface<T>
    */
   public function subDataHydrate(string $keyname, ?DataHydrateInterface $dataHydrate = null): DataHydrateInterface;
+
+  /**
+   * @return $this
+   */
+  public function removeSubDataHydrate(): self;
 
   /**
    * @return EventDispatcherInterface|null
@@ -43,19 +52,26 @@ interface DataHydrateInterface
    *
    * @return $this
    */
-  public function setDispatcher(EventDispatcherInterface $dispatcher): DataHydrateInterface;
+  public function setDispatcher(EventDispatcherInterface $dispatcher): self;
 
   /**
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function dispatchListEvent(): DataHydrateInterface;
+  public function dispatchListEvent(): self;
 
   /**
-   * @param FilterInterface $filter
+   * @param string $keyname
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function eventFilter(FilterInterface $filter): DataHydrateInterface;
+  public function setKeyname(string $keyname): self;
+
+  /**
+   * @param FilterInterface<T> $filter
+   *
+   * @return $this
+   */
+  public function eventFilter(FilterInterface $filter): self;
 
   /**
    * @param bool $force
@@ -67,9 +83,9 @@ interface DataHydrateInterface
   /**
    * @param bool $force
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function executePaginator(bool $force = false): DataHydrateInterface;
+  public function executePaginator(bool $force = false): self;
 
   /**
    * @param bool $force
@@ -81,7 +97,7 @@ interface DataHydrateInterface
   /**
    * @param bool $force
    *
-   * @return array
+   * @return array<T>
    */
   public function paginatorObjects(bool $force = false): array;
 
@@ -93,9 +109,9 @@ interface DataHydrateInterface
   /**
    * @param int|null $maxResult
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function setMaxResult(?int $maxResult): DataHydrateInterface;
+  public function setMaxResult(?int $maxResult): self;
 
   /**
    * @return int
@@ -105,9 +121,9 @@ interface DataHydrateInterface
   /**
    * @param int $offset
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function setOffset(int $offset): DataHydrateInterface;
+  public function setOffset(int $offset): self;
 
   /**
    * @return int
@@ -117,8 +133,23 @@ interface DataHydrateInterface
   /**
    * @param int $numPage
    *
-   * @return DataHydrateInterface
+   * @return $this
    */
-  public function setNumPage(int $numPage): DataHydrateInterface;
+  public function setNumPage(int $numPage): self;
+
+  /**
+   * @return QueryBuilder|null
+   */
+  public function paginatorQueryBuilder(): ?QueryBuilder;
+
+  /**
+   * @return QueryBuilder|null
+   */
+  public function countAllQueryBuilder(): ?QueryBuilder;
+
+  /**
+   * @return EntityManagerORMInterface<T>|null
+   */
+  public function getEntityManager(): ?EntityManagerORMInterface;
 
 }
